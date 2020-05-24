@@ -10,6 +10,7 @@ $(function() {
 
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
+        self.selectedDevice = ko.observable();
 
         self.onBeforeBinding = function() {
             self.arrDevices(self.settings.settings.plugins.airquality.arrDevices());
