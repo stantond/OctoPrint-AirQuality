@@ -39,7 +39,6 @@ $(function() {
             $("#AirQualityDeviceEditor").modal("show");
         }
 
-
         self.editDevice = function(data) {
             self.selectedDevice(data);
             $("#AirQualityDeviceEditor").modal("show");
