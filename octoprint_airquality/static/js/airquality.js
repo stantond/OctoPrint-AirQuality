@@ -5,25 +5,54 @@
  * License: AGPLv3
  */
 $(function() {
-    function AirqualityViewModel(parameters) {
+    function AirQualityViewModel(parameters) {
         var self = this;
 
-        // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        // self.settingsViewModel = parameters[1];
+        self.settings = parameters[0];
+        self.arrDevices = ko.observableArray();
 
-        // TODO: Implement your plugin's view model here.
+        self.onBeforeBinding = function() {
+            self.arrDevices(self.settings.settings.plugins.airquality.arrDevices());
+        }
+
+        self.onAfterBinding = function() {
+            // TODO handle missing devices
+        }
+
+        // self.onSettingsBeforeSave = function(payload) {
+        //     var devices_updated = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
+        //     self.arrDevices(self.settings.settings.plugins.airquality.arrDevices());
+        //     if(devices_updated){
+        //         // TODO reload devices
+        //     }
+        // }
+
+        self.addDevice = function() {
+            self.selectedDevice({
+                'name':ko.observable(''),
+                'model':ko.observable(''),
+                'location':ko.observable(''),
+                'port':ko.observable('')
+            });
+            self.settings.settings.plugins.airquality.arrDevices.push(self.selectedDevice());
+            $("#AirQualityDeviceEditor").modal("show");
+        }
+
+
+        self.editDevice = function(data) {
+            self.selectedDevice(data);
+            $("#AirQualityDeviceEditor").modal("show");
+        }
+
+        self.removeDevice = function(row) {
+            self.settings.settings.plugins.airquality.arrDevices.remove(row);
+        }
     }
 
-    /* view model class, parameters for constructor, container to bind to
-     * Please see http://docs.octoprint.org/en/master/plugins/viewmodels.html#registering-custom-viewmodels for more details
-     * and a full list of the available options.
-     */
+
     OCTOPRINT_VIEWMODELS.push({
-        construct: AirqualityViewModel,
-        // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
-        // Elements to bind to, e.g. #settings_plugin_airquality, #tab_plugin_airquality, ...
-        elements: [ /* ... */ ]
+        construct: AirQualityViewModel,
+        dependencies: ["settingsViewModel"],
+        elements: ["#settings_plugin_airquality"]
     });
 });

@@ -10,17 +10,37 @@ from __future__ import absolute_import
 # Take a look at the documentation on what other plugin mixins are available.
 
 import octoprint.plugin
+from . import SensorsManager
 
 class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
                        octoprint.plugin.AssetPlugin,
-                       octoprint.plugin.TemplatePlugin):
+                       octoprint.plugin.TemplatePlugin,
+					   octoprint.plugin.StartupPlugin):
+
+	def on_after_startup(self):
+		self._logger.info("Finding sensors...")
+		self.sensors_manager = SensorsManager.SensorsManager(self)
+		if self.sensors_manager.is_connected():
+			self._logger.info("Sensors are alive!")
+		else:
+			self._logger.error("Could not find the sensors.")
 
 	##~~ SettingsPlugin mixin
 
 	def get_settings_defaults(self):
 		return dict(
-			# put your plugin's default settings here
+			sensor_port="/dev/ttyUSB0",
+			sensor_baud_rate="9600",
+			arrDevices = []
 		)
+
+	##~~ TemplatePlugin mixin
+
+	def get_template_configs(self):
+		return [
+			dict(type="navbar", custom_bindings=False),
+			dict(type="settings", custom_bindings=True)
+		]
 
 	##~~ AssetPlugin mixin
 
@@ -28,7 +48,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 		# Define your plugin's asset files to automatically include in the
 		# core UI here.
 		return dict(
-			js=["js/airquality.js"],
+			js=["js/jquery-ui.min.js","js/knockout-sortable.js","js/airquality.js"],
 			css=["css/airquality.css"],
 			less=["less/airquality.less"]
 		)
