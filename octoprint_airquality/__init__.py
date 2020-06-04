@@ -17,6 +17,12 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
                        octoprint.plugin.TemplatePlugin,
 					   octoprint.plugin.StartupPlugin):
 
+	# supportedSensors = {
+	# 	"Plantower PMS5003": "5003",
+	# 	"Plantower PMS7003": "7003",
+	# 	"Plantower PMSA003": "A003"
+	# }
+
 	def on_after_startup(self):
 		self._logger.info("Finding sensors...")
 		self.sensors_manager = SensorsManager.SensorsManager(self)
@@ -48,7 +54,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 		# Define your plugin's asset files to automatically include in the
 		# core UI here.
 		return dict(
-			js=["js/jquery-ui.min.js","js/knockout-sortable.js","js/airquality.js"],
+			js=["js/jquery-ui.min.js","js/knockout-sortable.js","js/ko.observableDictionary.js","js/airquality.js"],
 			css=["css/airquality.css"],
 			less=["less/airquality.less"]
 		)

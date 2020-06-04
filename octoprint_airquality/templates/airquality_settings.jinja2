@@ -1,6 +1,6 @@
-<h4>{{ _('Air Quality Plugin Settings') }}</h4>
+<h3>{{ _('Air Quality Plugin Settings') }}</h4>
 
-<h6>{{ _('Devices') }}</h4>
+<h4>{{ _('Devices') }}</h4>
 <table class="table table-condensed">
 	<thead>
 		<tr>
@@ -8,16 +8,16 @@
 			<td style="text-align:center">{{ _('Model') }}</td>
             <td style="text-align:center">{{ _('Physical Location') }}</td>
             <td style="text-align:center">{{ _('Port') }}</td>
-			<td style="text-align:center"><a href="#" class="btn btn-mini" data-bind="click: addDevice"><i class="fas fa-plus" aria-hidden="true"></i></a></td>
+			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.addDevice"><i class="fas fa-plus" aria-hidden="true"></i></a></td>
 		</tr>
 	</thead>
-    <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.movePlug', axis:'y'} }">
+    <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
 		<tr data-bind="attr: {title: name}">
 			<td><span data-bind="text: name" /></td>
 			<td><span data-bind="text: model" /></td>
             <td><span data-bind="text: location" /></td>
             <td><span data-bind="text: port" /></td>
-			<td style="text-align:center">
+			<td style="text-align:right">
 				<div class="btn-group">
 					<a href="#" class="btn btn-mini moveDevice"><i class="fas fa-arrows-alt" aria-hidden="true"></i></a>
 					<a href="#" class="btn btn-mini" data-bind="click: $root.editDevice"><i class="fas fa-pencil-alt" aria-hidden="true"></i></a>
@@ -43,7 +43,7 @@
     </div>
 </form> #}
 
-<div id="AirQualityDeviceEditor" data-bind="with: selectedDevice" class="modal hide fade">
+<div id="AirQualityDeviceEditor" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
 	<div class="modal-header">
 		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
 		<h3>{{ _('Air Quality Device Editor') }}</h3>
@@ -58,7 +58,7 @@
         <div class="control-group">
             <label class="control-label">{{ _('Model') }}</label>
             <div class="controls">
-                <input type="text" class="input-block-level" data-bind="value: model">
+                <select data-bind="value: model, options: models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
             </div>
         </div>
         <div class="control-group">
@@ -75,6 +75,7 @@
         </div>
 	</div>
 	<div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
+		<a href="#" class="btn btn-primary" data-bind="click: $root.addDeviceToSettings" data-dismiss="modal" aria-hidden="true">{{ _('Add') }}</a>
 	</div>
 </div>
