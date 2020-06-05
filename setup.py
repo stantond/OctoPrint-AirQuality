@@ -33,7 +33,7 @@ plugin_url = "https://github.com/stantond/OctoPrint-AirQuality"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["pyserial>=3.4",]
+plugin_requires = ["pyserial>=3.4","plantower>=0.0.11"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
