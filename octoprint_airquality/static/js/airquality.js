@@ -22,9 +22,8 @@ $(function() {
             "A003": "Plantower PMSA003"
         }
 
-        self.getPrettyDeviceName = function(key) {
-            console.log(key);
-            console.log(self.supportedDevices[key]);
+        self.getPrettyDeviceName = function(model) {
+            return self.supportedDevices[model];
         }
 
         self.onBeforeBinding = function() {

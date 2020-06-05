@@ -14,7 +14,7 @@
     <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
 		<tr data-bind="attr: {title: name}">
 			<td><span data-bind="text: name" /></td>
-			<td><span data-bind="text: model" /></td>
+			<td><span data-bind="text: $root.getPrettyDeviceName(model())" /></td>
             <td><span data-bind="text: location" /></td>
             <td><span data-bind="text: port" /></td>
 			<td style="text-align:right">
