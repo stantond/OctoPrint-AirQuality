@@ -23,13 +23,13 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 	# 	"Plantower PMSA003": "A003"
 	# }
 
-	def on_after_startup(self):
-		self._logger.info("Finding sensors...")
-		self.sensors_manager = SensorsManager.SensorsManager(self)
-		if self.sensors_manager.is_connected():
-			self._logger.info("Sensors are alive!")
-		else:
-			self._logger.error("Could not find the sensors.")
+	# def on_after_startup(self):
+	# 	self._logger.info("Finding sensors...")
+	# 	self.sensors_manager = SensorsManager.SensorsManager(self)
+	# 	if self.sensors_manager.is_connected():
+	# 		self._logger.info("Sensors are alive!")
+	# 	else:
+	# 		self._logger.error("Could not find the sensors.")
 
 	##~~ SettingsPlugin mixin
 
