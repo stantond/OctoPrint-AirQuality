@@ -8,7 +8,7 @@
 			<td style="text-align:center">{{ _('Model') }}</td>
             <td style="text-align:center">{{ _('Physical Location') }}</td>
             <td style="text-align:center">{{ _('Port') }}</td>
-			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.addDevice"><i class="fas fa-plus" aria-hidden="true"></i></a></td>
+			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.addDevice"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
 		</tr>
 	</thead>
     <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
@@ -19,11 +19,11 @@
             <td><span data-bind="text: port" /></td>
 			<td style="text-align:right">
 				<div class="btn-group">
-					<a href="#" class="btn btn-mini moveDevice"><i class="fas fa-arrows-alt" aria-hidden="true"></i></a>
-					<a href="#" class="btn btn-mini" data-bind="click: $root.editDevice"><i class="fas fa-pencil-alt" aria-hidden="true"></i></a>
-					<a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.removeDevice"><i class="fas fa-times" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini moveDevice"><i class="fa fa-arrows-alt" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini" data-bind="click: $root.editDevice"><i class="fa fa-pencil" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.removeDevice"><i class="fa fa-times" aria-hidden="true"></i></a>
 				</div>
-				</td>
+            </td>
 		</tr>
 	</tbody>
 </table>
