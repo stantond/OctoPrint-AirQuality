@@ -8,7 +8,7 @@
 			<td style="text-align:center">{{ _('Model') }}</td>
             <td style="text-align:center">{{ _('Physical Location') }}</td>
             <td style="text-align:center">{{ _('Port') }}</td>
-			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.addDevice"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
+			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showAddDeviceModal"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
 		</tr>
 	</thead>
     <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
@@ -20,7 +20,7 @@
 			<td style="text-align:right">
 				<div class="btn-group">
 					<a href="#" class="btn btn-mini moveDevice"><i class="fa fa-arrows-alt" aria-hidden="true"></i></a>
-					<a href="#" class="btn btn-mini" data-bind="click: $root.editDevice"><i class="fa fa-pencil" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini" data-bind="click: $root.showEditDeviceModal"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 					<a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.removeDevice"><i class="fa fa-times" aria-hidden="true"></i></a>
 				</div>
             </td>
@@ -43,10 +43,10 @@
     </div>
 </form> #}
 
-<div id="AirQualityDeviceEditor" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
+<div id="AirQualityDeviceAddModal" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
 	<div class="modal-header">
 		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-		<h3>{{ _('Air Quality Device Editor') }}</h3>
+		<h3>{{ _('Add a new device') }}</h3>
 	</div>
 	<div class="modal-body">
         <div class="control-group">
@@ -58,7 +58,7 @@
         <div class="control-group">
             <label class="control-label">{{ _('Model') }}</label>
             <div class="controls">
-                <select data-bind="value: model, options: models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
+                <select data-bind="value: model, options: $root.models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
             </div>
         </div>
         <div class="control-group">
@@ -77,5 +77,42 @@
 	<div class="modal-footer">
         <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
 		<a href="#" class="btn btn-primary" data-bind="click: $root.addDeviceToSettings" data-dismiss="modal" aria-hidden="true">{{ _('Add') }}</a>
+	</div>
+</div>
+
+<div id="AirQualityDeviceEditModal" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
+	<div class="modal-header">
+		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
+		<h3>{{ _('Edit an existing device') }}</h3>
+	</div>
+	<div class="modal-body">
+        <div class="control-group">
+            <label class="control-label">{{ _('Name') }}</label>
+            <div class="controls">
+                <input type="text" class="input-block-level" data-bind="value: name">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Model') }}</label>
+            <div class="controls">
+                <select data-bind="value: model, options: $root.models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Physical Location') }}</label>
+            <div class="controls">
+                <input type="text" class="input-block-level" data-bind="value: location">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Port') }}</label>
+            <div class="controls">
+                <input type="text" class="input-block-level" data-bind="value: port">
+            </div>
+        </div>
+	</div>
+	<div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
+		<a href="#" class="btn btn-primary" data-bind="click: $root.applyEditDeviceToSettings" data-dismiss="modal" aria-hidden="true">{{ _('Change') }}</a>
 	</div>
 </div>

@@ -11,6 +11,7 @@ $(function() {
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
         self.selectedDevice = ko.observable();
+        self.selectedDeviceIndex = 0;
         // self.supportedDevices = {
         //     "Plantower PMS5003": "5003",
         //     "Plantower PMS7003": "7003",
@@ -21,6 +22,8 @@ $(function() {
             "7003": "Plantower PMS7003",
             "A003": "Plantower PMSA003"
         }
+
+        self.models = ko.observableArray(mapDictionaryToArray(self.supportedDevices));
 
         self.getPrettyDeviceName = function(model) {
             return self.supportedDevices[model];
@@ -42,25 +45,39 @@ $(function() {
         //     }
         // }
 
-        self.addDevice = function() {
+        self.showAddDeviceModal = function() {
             self.selectedDevice({
                 'name':ko.observable(''),
-                'models':ko.observableArray(mapDictionaryToArray(self.supportedDevices)),
                 'model':ko.observable(''),
                 'location':ko.observable(''),
                 'port':ko.observable('')
             });
-            $("#AirQualityDeviceEditor").modal("show");
+            $("#AirQualityDeviceAddModal").modal("show");
         }
 
         self.addDeviceToSettings = function() {
-            delete self.selectedDevice['models'];
             self.settings.settings.plugins.airquality.arrDevices.push(self.selectedDevice());
         }
 
-        self.editDevice = function(device) {
-            self.selectedDevice(device);
-            $("#AirQualityDeviceEditor").modal("show");
+        self.showEditDeviceModal = function(device) {
+            self.selectedDeviceIndex = self.settings.settings.plugins.airquality.arrDevices.indexOf(device);
+            self.selectedDevice({
+                'name':ko.observable(device.name()),
+                'model':ko.observable(device.model()),
+                'location':ko.observable(device.location()),
+                'port':ko.observable(device.port())
+            });
+            console.log(self.selectedDevice.name())
+            $("#AirQualityDeviceEditModal").modal("show");
+        }
+
+        self.applyEditDeviceToSettings = function(device) {
+            self.settings.settings.plugins.airquality.arrDevices[self.selectedDeviceIndex] = {
+                'name': self.selectedDevice.name,
+                'model': self.selectedDevice.model,
+                'location': self.selectedDevice.location,
+                'port': self.selectedDevice.port
+            }
         }
 
         self.removeDevice = function(device) {
