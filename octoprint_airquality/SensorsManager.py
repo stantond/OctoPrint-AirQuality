@@ -14,7 +14,7 @@ class SensorsManager():
         self._plugin_manager = plugin._plugin_manager
         self._settings = plugin._settings
 
-        self.ports = []
+        self.serial_ports = []
         self.sensors = []
         self.find_serial_ports()
         # self.initialise_sensors()
@@ -73,22 +73,29 @@ class SensorsManager():
             self.readThread.join()
         self.readThread = None
 
+    # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
     def find_serial_ports(self):
-        # Get all serial ports
-        # Remove port being used by printer
-        # Map into a usable format
-
-        # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
-        ports_list = list(list_ports.comports())
-        for i in ports_list:
+        self.serial_ports = list(list_ports.comports())
+        for i in self.serial_ports:
+            port_attributes = ""
+            first = True
             for j in i:
-                print(j)
+                if first:
+                    first = False
+                else:
+                    port_attributes += ", "
+                port_attributes += j
+            self._logger.info("Detected serial port: " + port_attributes)
+            
+        # @TODO: Remove port being used by printer
+
         # if len(self.ports) > 0:
         #     for port in self.ports:
         #         if self.isPrinterPort(port):
         #             self._logger.info("Removing Printer Port: " + port)
         #             self.ports.remove(port)
-        if len(ports_list) == 0:
+        
+        if len(self.serial_ports) == 0:
             self._logger.info("No serial ports available")
 
     # below code from https://gitlab.com/mosaic-mfg/palette-2-plugin/blob/master/octoprint_palette2/Omega.py
