@@ -4,7 +4,7 @@ import sys
 import glob
 import threading
 import serial
-import serial.tools.list_ports
+from serial.tools import list_ports
 import plantower, time
 
 class SensorsManager():
@@ -16,24 +16,25 @@ class SensorsManager():
 
         self.ports = []
         self.sensors = []
-        self.updatePortsList()
-        self.build_sensors_list()
+        self.find_serial_ports()
+        # self.initialise_sensors()
         self.readThread = None
         self.readThreadStop = False
         self._connected = False
         self.serialConn = None
-        self.start_monitoring()
+        # self.start_monitoring()
 
     def start_monitoring(self):
+        # If > 0 active sensors then
         self.startReadThread()
         self._connected = True
 
-    def build_sensors_list(self):
-        self._logger.info("Building sensor list...")
+    def initialise_sensors(self):
+        self._logger.info("Initialising sensors...")
         sensor = plantower.Plantower(port=self._settings.get(["sensor_port"]))
         sensor.mode_change(plantower.PMS_PASSIVE_MODE)
         self.sensors.append(sensor)
-        self._logger.info("Sensor list built")
+        self._logger.info("Sensors ready")
         self._logger.info(self.sensors)
 
     def sensors_read_thread(self, sensors):
@@ -72,15 +73,23 @@ class SensorsManager():
             self.readThread.join()
         self.readThread = None
 
-    def updatePortsList(self):
-        self.ports = self.getAllPorts()
-        if len(self.ports) > 0:
-            for port in self.ports:
-                if self.isPrinterPort(port):
-                    self._logger.info("Removing Printer Port: " + port)
-                    self.ports.remove(port)
-        if len(self.ports) == 0:
-            self._logger.info("No ports found")
+    def find_serial_ports(self):
+        # Get all serial ports
+        # Remove port being used by printer
+        # Map into a usable format
+
+        # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
+        ports_list = list(list_ports.comports())
+        for i in ports_list:
+            for j in i:
+                print(j)
+        # if len(self.ports) > 0:
+        #     for port in self.ports:
+        #         if self.isPrinterPort(port):
+        #             self._logger.info("Removing Printer Port: " + port)
+        #             self.ports.remove(port)
+        if len(ports_list) == 0:
+            self._logger.info("No serial ports available")
 
     # below code from https://gitlab.com/mosaic-mfg/palette-2-plugin/blob/master/octoprint_palette2/Omega.py
     def getAllPorts(self):
