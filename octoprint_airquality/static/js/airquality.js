@@ -61,23 +61,22 @@ $(function() {
 
         self.showEditDeviceModal = function(device) {
             self.selectedDeviceIndex = self.settings.settings.plugins.airquality.arrDevices.indexOf(device);
+            nonObservableDevice = ko.toJS(device);
             self.selectedDevice({
-                'name':ko.observable(device.name()),
-                'model':ko.observable(device.model()),
-                'location':ko.observable(device.location()),
-                'port':ko.observable(device.port())
+                'name':ko.observable(nonObservableDevice["name"]),
+                'model':ko.observable(nonObservableDevice["model"]),
+                'location':ko.observable(nonObservableDevice["location"]),
+                'port':ko.observable(nonObservableDevice["port"])
             });
-            console.log(self.selectedDevice.name())
             $("#AirQualityDeviceEditModal").modal("show");
         }
 
         self.applyEditDeviceToSettings = function(device) {
-            self.settings.settings.plugins.airquality.arrDevices[self.selectedDeviceIndex] = {
-                'name': self.selectedDevice.name,
-                'model': self.selectedDevice.model,
-                'location': self.selectedDevice.location,
-                'port': self.selectedDevice.port
-            }
+            nonObservableDevice = ko.toJS(device);
+            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
+            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
+            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
+            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"]);
         }
 
         self.removeDevice = function(device) {
