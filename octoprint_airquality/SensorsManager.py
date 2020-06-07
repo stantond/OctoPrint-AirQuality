@@ -75,28 +75,42 @@ class SensorsManager():
 
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
     def find_serial_ports(self):
+        self._logger.info("Building list of available serial devices...")
         self.serial_ports = list(list_ports.comports())
+        printer_port = self._printer.get_current_connection()[1]
+        if self._printer.get_current_connection()[1] is not None:
+            self._logger.info("Printer found. Ignoring current printer port " + printer_port + ".")
+        else:
+            printer_port = self._settings.global_get(["serial","port"])
+            if printer_port == "AUTO":
+                self._logger.info("Printer not connected and saved connection is set to " + printer_port + ". List will be rebuilt once printer is connected.")
+            elif printer_port == None:
+                self._logger.info("Printer not connected. No saved printer port found. List will be rebuilt once printer is connected.")
+            else:
+                self._logger.info("Printer not connected. Ignoring saved printer port " + printer_port + ".")
         for i in self.serial_ports:
-            port_attributes = ""
-            first = True
-            for j in i:
-                if first:
-                    first = False
-                else:
-                    port_attributes += ", "
-                port_attributes += j
-            self._logger.info("Detected serial port: " + port_attributes)
-            
-        # @TODO: Remove port being used by printer
-
-        # if len(self.ports) > 0:
-        #     for port in self.ports:
-        #         if self.isPrinterPort(port):
-        #             self._logger.info("Removing Printer Port: " + port)
-        #             self.ports.remove(port)
-        
+            if i.device == printer_port:
+                self.serial_ports.remove(i)
         if len(self.serial_ports) == 0:
             self._logger.info("No serial ports available")
+        else:
+            for i in self.serial_ports:
+                if i.device == printer_port:
+                    self.serial_ports.remove(i)
+                else:
+                    port_attributes = ""
+                    first = True
+                    for j in i:
+                        if first:
+                            first = False
+                        else:
+                            port_attributes += ", "
+                        port_attributes += j
+                    self._logger.info("Detected serial port: " + port_attributes)
+
+        # @TODO: Rebuild the list when the printer port changes
+        # @TODO: When the list is rebuilt, disable sensors that are no longer valid
+
 
     # below code from https://gitlab.com/mosaic-mfg/palette-2-plugin/blob/master/octoprint_palette2/Omega.py
     def getAllPorts(self):
