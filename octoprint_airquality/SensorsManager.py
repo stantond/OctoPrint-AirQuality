@@ -115,7 +115,6 @@ class SensorsManager():
                         port_attributes += j
                     self._logger.info("Detected serial port: " + port_attributes)
 
-        # @TODO: Rebuild the list when the printer port changes
         # @TODO: When the list is rebuilt, disable sensors that are no longer valid
 
     def is_connected(self):
