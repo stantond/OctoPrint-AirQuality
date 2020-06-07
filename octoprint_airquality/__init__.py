@@ -15,7 +15,8 @@ from . import SensorsManager
 class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
                        octoprint.plugin.AssetPlugin,
                        octoprint.plugin.TemplatePlugin,
-					   octoprint.plugin.StartupPlugin):
+					   octoprint.plugin.StartupPlugin,
+					   octoprint.plugin.EventHandlerPlugin):
 
 	# supportedSensors = {
 	# 	"Plantower PMS5003": "5003",
@@ -58,6 +59,13 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 			css=["css/airquality.css"],
 			less=["less/airquality.less"]
 		)
+
+	##~~ EventHandlerPlugin mixin
+
+	def on_event(self, event, payload):
+		if event == "Connected":
+			self.sensors_manager.refresh_sensors(payload["port"])
+		
 
 	##~~ Softwareupdate hook
 
