@@ -64,8 +64,13 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 
 	def on_event(self, event, payload):
 		if event == "Connected":
-			self.sensors_manager.refresh_sensors(payload["port"])
-		
+			try:
+				self.sensors_manager.refresh_sensors(payload["port"])
+			except AttributeError:
+				# As this event also fires for a connection during start-up,
+				# `sensor_manager` may not exist yet, so we can safely catch
+				# and ignore this error.
+				pass
 
 	##~~ Softwareupdate hook
 

@@ -10,6 +10,7 @@ $(function() {
 
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
+        self.serialPorts = ko.observableDictionary();
         self.selectedDevice = ko.observable();
         self.selectedDeviceIndex = 0;
         // self.supportedDevices = {
@@ -35,6 +36,14 @@ $(function() {
 
         self.onAfterBinding = function() {
             // TODO handle missing devices
+        }
+
+        self.onDataUpdaterPluginMessage = function(pluginName, message) {
+            if (pluginName == "airquality") {
+                console.log("message recieved...");
+                console.log(message);
+                // self.serialPorts(message)
+            }
         }
 
         // self.onSettingsBeforeSave = function(payload) {

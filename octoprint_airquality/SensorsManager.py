@@ -9,9 +9,10 @@ import plantower, time
 
 class SensorsManager():
     def __init__(self, plugin):
+        self._identifier = plugin._identifier
         self._logger = plugin._logger
-        self._printer = plugin._printer
         self._plugin_manager = plugin._plugin_manager
+        self._printer = plugin._printer
         self._settings = plugin._settings
 
         self.printer_port = ""
@@ -27,9 +28,11 @@ class SensorsManager():
         # self.start_monitoring()
 
     def refresh_sensors(self, new_port=None):
+        # If being called directly or as a result of the printer port changing
         if new_port == None or new_port != self.printer_port:
             self.find_serial_ports()
-            # self.initialise_sensors()
+            self._plugin_manager.send_plugin_message(self._identifier, self.serial_port_details)
+        # self.initialise_sensors()
 
     def start_monitoring(self):
         # @TODO If > 0 active sensors then
@@ -82,6 +85,7 @@ class SensorsManager():
 
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
     def find_serial_ports(self):
+        self.serial_port_details = {}
         self._logger.info("Building list of available serial devices...")
         self.serial_ports = list(list_ports.comports())
         self.printer_port = self._printer.get_current_connection()[1]
@@ -102,18 +106,28 @@ class SensorsManager():
             self._logger.info("No serial ports available")
         else:
             for i in self.serial_ports:
-                if i.device == self.printer_port:
-                    self.serial_ports.remove(i)
+                self.serial_port_details[i.device] = {
+                    "device": i.device,
+                    "name": i.name,
+                    "description": i.description,
+                    "hwid": i.hwid,
+                    "vid": i.vid,
+                    "pid": i.pid,
+                    "serial_number": i.serial_number,
+                    "location": i.location,
+                    "manufacturer": i.manufacturer,
+                    "product": i.product,
+                    "interface": i.interface
+                }
+            keys_string = ""
+            first = True
+            for key in self.serial_port_details.keys():
+                if first:
+                    first = False
                 else:
-                    port_attributes = ""
-                    first = True
-                    for j in i:
-                        if first:
-                            first = False
-                        else:
-                            port_attributes += ", "
-                        port_attributes += j
-                    self._logger.info("Detected serial port: " + port_attributes)
+                    keys_string += ", "
+                keys_string += key
+            self._logger.info("Available serial ports: " + keys_string)
 
         # @TODO: When the list is rebuilt, disable sensors that are no longer valid
 
