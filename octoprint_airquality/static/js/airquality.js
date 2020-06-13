@@ -10,7 +10,10 @@ $(function() {
 
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
-        self.serialPorts = ko.observableDictionary();
+        self.serialPorts = {};
+        self.serialPortsList = function() {
+            return Object.keys(self.serialPorts);
+        };
         self.selectedDevice = ko.observable();
         self.selectedDeviceIndex = 0;
         // self.supportedDevices = {
@@ -25,6 +28,10 @@ $(function() {
         }
 
         self.models = ko.observableArray(mapDictionaryToArray(self.supportedDevices));
+
+        self.alertMessage = ko.observable("");
+        self.alertType = ko.observable("alert-warning");
+        self.showAlert = ko.observable(false);
 
         self.getPrettyDeviceName = function(model) {
             return self.supportedDevices[model];
@@ -42,10 +49,64 @@ $(function() {
             if (pluginName == "airquality") {
                 console.log("message recieved...");
                 console.log(message);
-                // self.serialPorts(message)
+                self.serialPorts = message;
             }
         }
 
+        self.hideAlert = function() {
+            self.showAlert(false);
+        }
+
+        self.refreshSensors = function(button=null) {
+            var alert = undefined;
+            button.disabled=true;
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "refresh_sensors"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(responseText) {
+                    if(button!==null) {
+                        alertText = gettext(responseText["message"]);
+                        self.alertType("alert-success");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            self.showAlert(false);
+                        }, 3000);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 3000);
+                    }
+                },
+                error: function(responseText, errorThrown) { 
+                    if(button!==null) {
+                        alert = gettext(responseText["message"] + ": " + errorThrown);
+                        self.alertType("alert-error");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 5000);
+                    }
+                } 
+            })
+        }
+
+        self.onSettingsShown = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "refresh_sensors"
+                }),
+                contentType: "application/json; charset=UTF-8"
+            })
+        }
         // self.onSettingsBeforeSave = function(payload) {
         //     var devices_updated = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
         //     self.arrDevices(self.settings.settings.plugins.airquality.arrDevices());

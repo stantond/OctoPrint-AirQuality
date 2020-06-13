@@ -9,14 +9,17 @@ from __future__ import absolute_import
 #
 # Take a look at the documentation on what other plugin mixins are available.
 
+import flask
 import octoprint.plugin
+from octoprint.server import user_permission
 from . import SensorsManager
 
 class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
                        octoprint.plugin.AssetPlugin,
                        octoprint.plugin.TemplatePlugin,
 					   octoprint.plugin.StartupPlugin,
-					   octoprint.plugin.EventHandlerPlugin):
+					   octoprint.plugin.EventHandlerPlugin,
+					   octoprint.plugin.SimpleApiPlugin):
 
 	# supportedSensors = {
 	# 	"Plantower PMS5003": "5003",
@@ -71,6 +74,24 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				# `sensor_manager` may not exist yet, so we can safely catch
 				# and ignore this error.
 				pass
+
+	##~~ SimpleApiPlugin mixin
+
+	def get_api_commands(self):
+		return dict(
+			refresh_sensors=[]
+		)
+
+	def on_api_command(self, command, data):
+		if not user_permission.can():
+			return flask.make_response("User does not have permission", 403)
+		self._logger.info(command)
+		if command == "refresh_sensors":
+			try:
+				self.sensors_manager.refresh_sensors()
+				return flask.make_response('{"message": "Sensors refreshed"}', 200)
+			except:
+				return flask.make_response('{"message": "Failed to refresh sensors"}', 500)
 
 	##~~ Softwareupdate hook
 
