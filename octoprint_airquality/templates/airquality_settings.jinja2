@@ -75,7 +75,7 @@
             <label class="control-label">{{ _('Serial Port') }}</label>
             <div class="controls">
                 <div class="input-append">
-                    <select data-bind="value: port, options: $root.serialPortsList, optionsText: 'key',  optionsValue: 'key', optionsCaption: 'Choose a serial port'"></select>
+                    <select data-bind="value: port, options: $root.serialPortsList, optionsCaption: 'Choose a serial port'"></select>
                     <button id="AirQualityDeviceAddModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceAddModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
             </div>
@@ -119,7 +119,7 @@
             <label class="control-label">{{ _('Serial Port') }}</label>
             <div class="controls">
                 <div class="input-append">
-                    <select data-bind="value: port, options: $root.serialPortsList, optionsText: 'key',  optionsValue: 'key', optionsCaption: 'Choose a serial port'"></select>
+                    <select data-bind="value: port, options: $root.serialPortsListEdit, optionsCaption: 'Choose a serial port'"></select>
                     <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
             </div>

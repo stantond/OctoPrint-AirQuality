@@ -11,9 +11,7 @@ $(function() {
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
         self.serialPorts = {};
-        self.serialPortsList = function() {
-            return Object.keys(self.serialPorts);
-        };
+        self.serialPortsList = ko.observableArray();
         self.selectedDevice = ko.observable();
         self.selectedDeviceIndex = 0;
         // self.supportedDevices = {
@@ -21,11 +19,26 @@ $(function() {
         //     "Plantower PMS7003": "7003",
         //     "Plantower PMSA003": "A003"
         // }
+        self.serialPortsListEdit = ko.computed(function() {
+            var fullList = [];
+            if (self.selectedDevice() !== undefined) {
+                console.log("selected device port: " + self.selectedDevice().port());
+                console.log("port in list: " + self.serialPortsList.indexOf(self.selectedDevice().port()));
+                if (self.serialPortsList.indexOf(self.selectedDevice().port()) === -1) {
+                    fullList.push(self.selectedDevice().port());
+                };
+            };
+            
+            fullList.push(...self.serialPortsList());
+            console.log(fullList);
+            return fullList;
+        }, self);
+
         self.supportedDevices = {
             "5003": "Plantower PMS5003",
             "7003": "Plantower PMS7003",
             "A003": "Plantower PMSA003"
-        }
+        };
 
         self.models = ko.observableArray(mapDictionaryToArray(self.supportedDevices));
 
@@ -47,9 +60,8 @@ $(function() {
 
         self.onDataUpdaterPluginMessage = function(pluginName, message) {
             if (pluginName == "airquality") {
-                console.log("message recieved...");
-                console.log(message);
                 self.serialPorts = message;
+                self.serialPortsList(Object.keys(self.serialPorts));
             }
         }
 
