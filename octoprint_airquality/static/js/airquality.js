@@ -19,20 +19,39 @@ $(function() {
         //     "Plantower PMS7003": "7003",
         //     "Plantower PMSA003": "A003"
         // }
+        // self.serialPortsListEdit = ko.computed(function() {
+        //     var fullList = [];
+        //     if (self.selectedDevice() !== undefined) {
+        //         console.log("selected device port: " + self.selectedDevice().port());
+        //         console.log("port in list: " + self.serialPortsList.indexOf(self.selectedDevice().port()));
+        //         if (self.serialPortsList.indexOf(self.selectedDevice().port()) === -1) {
+        //             fullList.push(self.selectedDevice().port());
+        //         };
+        //     };
+        //     fullList.push(...self.serialPortsList());
+        //     console.log(fullList);
+        //     return fullList;
+        // }, self);
+
         self.serialPortsListEdit = ko.computed(function() {
-            var fullList = [];
+            console.log("DEBUG: Computing serialPortsListEdit");
+            var fullList = ko.utils.arrayMap(self.serialPortsList(), function(item) {
+                console.log("DEBUG: Adding item: " + item);
+                return item;
+            });
             if (self.selectedDevice() !== undefined) {
-                console.log("selected device port: " + self.selectedDevice().port());
-                console.log("port in list: " + self.serialPortsList.indexOf(self.selectedDevice().port()));
-                if (self.serialPortsList.indexOf(self.selectedDevice().port()) === -1) {
+                console.log("DEBUG: selectedDevice() exists...")
+                console.log("DEBUG: selectedDevice() port is " + self.selectedDevice().port());
+                if (fullList.indexOf(self.selectedDevice().port()) === -1 && self.selectedDevice().port() !== undefined) {
+                    console.log("DEBUG: selectedDevice() port " + self.selectedDevice().port() + " is not in the list anymore");
                     fullList.push(self.selectedDevice().port());
                 };
+            } else {
+                console.log("DEBUG: selectedDevice() does not exist.");
             };
-            
-            fullList.push(...self.serialPortsList());
-            console.log(fullList);
-            return fullList;
-        }, self);
+            console.log("DEBUG: Full List: " + fullList);
+            return fullList.sort();
+        });
 
         self.supportedDevices = {
             "5003": "Plantower PMS5003",
