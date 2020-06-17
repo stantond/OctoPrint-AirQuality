@@ -8,66 +8,61 @@ $(function() {
     function AirQualityViewModel(parameters) {
         var self = this;
 
+        self.supportedDevices = {
+            "5003": "Plantower PMS5003",
+            "7003": "Plantower PMS7003",
+            "A003": "Plantower PMSA003"
+        };
+
         self.settings = parameters[0];
         self.arrDevices = ko.observableArray();
         self.serialPorts = {};
         self.serialPortsList = ko.observableArray();
         self.selectedDevice = ko.observable();
         self.selectedDeviceIndex = 0;
-        // self.supportedDevices = {
-        //     "Plantower PMS5003": "5003",
-        //     "Plantower PMS7003": "7003",
-        //     "Plantower PMSA003": "A003"
-        // }
-        // self.serialPortsListEdit = ko.computed(function() {
-        //     var fullList = [];
-        //     if (self.selectedDevice() !== undefined) {
-        //         console.log("selected device port: " + self.selectedDevice().port());
-        //         console.log("port in list: " + self.serialPortsList.indexOf(self.selectedDevice().port()));
-        //         if (self.serialPortsList.indexOf(self.selectedDevice().port()) === -1) {
-        //             fullList.push(self.selectedDevice().port());
-        //         };
-        //     };
-        //     fullList.push(...self.serialPortsList());
-        //     console.log(fullList);
-        //     return fullList;
-        // }, self);
 
         self.serialPortsListEdit = ko.computed(function() {
-            console.log("DEBUG: Computing serialPortsListEdit");
-            var fullList = ko.utils.arrayMap(self.serialPortsList(), function(item) {
-                console.log("DEBUG: Adding item: " + item);
-                return item;
-            });
+            console.log("DEBUG: COMPUTING");
+            var fullList = [];
+            fullList.push(...self.serialPortsList());
+            console.log("DEBUG: fullList from serialPortsList:");
+            console.log(fullList);
             if (self.selectedDevice() !== undefined) {
-                console.log("DEBUG: selectedDevice() exists...")
-                console.log("DEBUG: selectedDevice() port is " + self.selectedDevice().port());
+                // console.log(self.arrDevices()[self.selectedDeviceIndex].port());
+                console.log("DEBUG: selectedDevice() exists...");
+                console.log("DEBUG: selectedDevice() port is ");
                 console.log(self.selectedDevice().port());
                 if (fullList.indexOf(self.selectedDevice().port()) === -1 && self.selectedDevice().port() !== undefined) {
-                    console.log("DEBUG: selectedDevice() port " + self.selectedDevice().port() + " is not in the list anymore");
+                    console.log("DEBUG: selectedDevice() port is not in the list anymore:");
+                    console.log(self.selectedDevice().port());
                     fullList.push(self.selectedDevice().port());
-                };
-                    console.log("DEBUG: arrDevices() port " + self.arrDevices()[self.selectedDeviceIndex].port() + " is not in the list anymore");
-                    fullList.push(self.arrDevices()[self.selectedDeviceIndex].port());
+                // } else if (self.arrDevices()[self.selectedDeviceIndex].port() === -1 && self.arrDevices()[self.selectedDeviceIndex].port() !== undefined) {
+                //     console.log("DEBUG: Falling back to arrDevice");
+                //     console.log("DEBUG: arrDevices() port " + self.arrDevices()[self.selectedDeviceIndex].port() + " is not in the list anymore");
+                //     fullList.push(self.arrDevices()[self.selectedDeviceIndex].port());
                 }; 
+                console.log("DEBUG: selectedDevice() port is now:");
+                console.log(self.selectedDevice().port());
             } else {
-                console.log("DEBUG: selectedDevice() does not exist.");
+                console.log("DEBUG: selectedDevice() is undefined.");
             };
-            console.log("DEBUG: Full List: " + fullList);
+            console.log("DEBUG: fullList final:");
+            console.log(fullList);
             return fullList.sort();
         });
 
         // self.serialPortsListEdit = ko.observableArray();
-        
         // self.selectedDevice.subscribe(function() {
         //     if (self.selectedDevice() !== undefined) {
         //         console.log(self.serialPortsList());
         //         var fullList = ko.utils.arrayMap(self.serialPortsList(), function(item) {
-        self.supportedDevices = {
-            "5003": "Plantower PMS5003",
-            "7003": "Plantower PMS7003",
-            "A003": "Plantower PMSA003"
-        };
+        //             console.log("DEBUG: Adding item: " + item);
+        //             return item;
+        //         });
+        //     }
+        // });
+
+
 
         self.models = ko.observableArray(mapDictionaryToArray(self.supportedDevices));
 
