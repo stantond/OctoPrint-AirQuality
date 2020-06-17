@@ -80,7 +80,8 @@ $(function() {
         self.onDataUpdaterPluginMessage = function(pluginName, message) {
             if (pluginName == "airquality") {
                 self.serialPorts = message;
-                self.serialPortsList(Object.keys(self.serialPorts));
+                self.serialPortsList.removeAll();
+                self.serialPortsList.push(...Object.keys(self.serialPorts));
             }
         }
 
