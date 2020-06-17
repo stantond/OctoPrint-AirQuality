@@ -42,10 +42,14 @@ $(function() {
             if (self.selectedDevice() !== undefined) {
                 console.log("DEBUG: selectedDevice() exists...")
                 console.log("DEBUG: selectedDevice() port is " + self.selectedDevice().port());
+                console.log(self.selectedDevice().port());
                 if (fullList.indexOf(self.selectedDevice().port()) === -1 && self.selectedDevice().port() !== undefined) {
                     console.log("DEBUG: selectedDevice() port " + self.selectedDevice().port() + " is not in the list anymore");
                     fullList.push(self.selectedDevice().port());
                 };
+                    console.log("DEBUG: arrDevices() port " + self.arrDevices()[self.selectedDeviceIndex].port() + " is not in the list anymore");
+                    fullList.push(self.arrDevices()[self.selectedDeviceIndex].port());
+                }; 
             } else {
                 console.log("DEBUG: selectedDevice() does not exist.");
             };
@@ -53,6 +57,12 @@ $(function() {
             return fullList.sort();
         });
 
+        // self.serialPortsListEdit = ko.observableArray();
+        
+        // self.selectedDevice.subscribe(function() {
+        //     if (self.selectedDevice() !== undefined) {
+        //         console.log(self.serialPortsList());
+        //         var fullList = ko.utils.arrayMap(self.serialPortsList(), function(item) {
         self.supportedDevices = {
             "5003": "Plantower PMS5003",
             "7003": "Plantower PMS7003",
