@@ -20,6 +20,7 @@ $(function() {
         self.serialPortsList = ko.observableArray();
         self.selectedDevice = ko.observable();
         self.selectedDeviceIndex = 0;
+        self.unsavedChanges = ko.observable(false);
 
         self.serialPortsListEdit = ko.computed(function() {
             console.log("DEBUG: COMPUTING");
@@ -35,12 +36,10 @@ $(function() {
                 if (fullList.indexOf(self.selectedDevice().port()) === -1 && self.selectedDevice().port() !== undefined) {
                     console.log("DEBUG: selectedDevice() port is not in the list anymore:");
                     console.log(self.selectedDevice().port());
+                    console.log("DEBUG: adding it back:");
                     fullList.push(self.selectedDevice().port());
-                // } else if (self.arrDevices()[self.selectedDeviceIndex].port() === -1 && self.arrDevices()[self.selectedDeviceIndex].port() !== undefined) {
-                //     console.log("DEBUG: Falling back to arrDevice");
-                //     console.log("DEBUG: arrDevices() port " + self.arrDevices()[self.selectedDeviceIndex].port() + " is not in the list anymore");
-                //     fullList.push(self.arrDevices()[self.selectedDeviceIndex].port());
-                }; 
+                    console.log(fullList);
+                };
                 console.log("DEBUG: selectedDevice() port is now:");
                 console.log(self.selectedDevice().port());
             } else {
@@ -50,6 +49,19 @@ $(function() {
             console.log(fullList);
             return fullList.sort();
         });
+
+
+        self.arrDevices.subscribe(function(newValue) {
+            console.log(newValue);
+            var unsavedDevices = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
+            console.log(ko.toJSON(self.arrDevices()));
+            console.log(ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
+            if (unsavedDevices) {
+                self.unsavedChanges(true);
+            } else {
+                self.unsavedChanges(false);
+            };
+        }, self, "arrayChange");
 
         // self.serialPortsListEdit = ko.observableArray();
         // self.selectedDevice.subscribe(function() {
@@ -86,8 +98,6 @@ $(function() {
             if (pluginName == "airquality") {
                 self.serialPorts = message;
                 self.serialPortsList(Object.keys(self.serialPorts));
-                // console.log("serialPortsList:");
-                // console.log(self.serialPortsList());
             }
         }
 
@@ -145,11 +155,17 @@ $(function() {
                 contentType: "application/json; charset=UTF-8"
             })
         }
+
         // self.onSettingsBeforeSave = function(payload) {
+        //     console.log("To JSON");
+        //     console.log(ko.toJSON(self.arrDevices()));
+        //     console.log(ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
         //     var devices_updated = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
-        //     self.arrDevices(self.settings.settings.plugins.airquality.arrDevices());
+        //     console.log(devices_updated);
         //     if(devices_updated){
-        //         // TODO reload devices
+                // self.settings.settings.plugins.airquality.arrDevices(self.arrDevices());
+                // TODO reload devices
+                // console.log(self.settings.settings.plugins.airquality.arrDevices());
         //     }
         // }
 
@@ -164,11 +180,11 @@ $(function() {
         }
 
         self.addDeviceToSettings = function() {
-            self.settings.settings.plugins.airquality.arrDevices.push(self.selectedDevice());
+            self.arrDevices.push(self.selectedDevice());
         }
 
         self.showEditDeviceModal = function(device) {
-            self.selectedDeviceIndex = self.settings.settings.plugins.airquality.arrDevices.indexOf(device);
+            self.selectedDeviceIndex = self.arrDevices.indexOf(device);
             nonObservableDevice = ko.toJS(device);
             self.selectedDevice({
                 'name':ko.observable(nonObservableDevice["name"]),
@@ -181,14 +197,14 @@ $(function() {
 
         self.applyEditDeviceToSettings = function(device) {
             nonObservableDevice = ko.toJS(device);
-            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
-            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
-            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
-            self.settings.settings.plugins.airquality.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"]);
+            self.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
+            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
+            self.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
+            self.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"]);
         }
 
         self.removeDevice = function(device) {
-            self.settings.settings.plugins.airquality.arrDevices.remove(device);
+            self.arrDevices.remove(device);
         }
     }
 

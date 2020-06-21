@@ -1,5 +1,8 @@
 <h3>{{ _('Air Quality Plugin Settings') }}</h4>
-
+<div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.unsavedChanges()">
+    <span>{{ _('You have unsaved changes...') }}</span>
+    <button type="button" class="close" data-bind="click: $root.hideAlert">&times;</button>
+</div>
 <h4>{{ _('Devices') }}</h4>
 <table class="table table-condensed">
 	<thead>
@@ -11,7 +14,7 @@
 			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showAddDeviceModal"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
 		</tr>
 	</thead>
-    <tbody data-bind="sortable: { data: settings.settings.plugins.airquality.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
+    <tbody data-bind="sortable: { data: $root.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
 		<tr data-bind="attr: {title: name}">
 			<td><span data-bind="text: name" /></td>
 			<td><span data-bind="text: $root.getPrettyDeviceName(model())" /></td>
