@@ -1,7 +1,6 @@
 <h3>{{ _('Air Quality Plugin Settings') }}</h4>
 <div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.unsavedChanges()">
     <span>{{ _('You have unsaved changes...') }}</span>
-    <button type="button" class="close" data-bind="click: $root.hideAlert">&times;</button>
 </div>
 <h4>{{ _('Devices') }}</h4>
 <table class="table table-condensed">
@@ -74,11 +73,11 @@
                 <input type="text" class="input-block-level" data-bind="value: location">
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group ">
             <label class="control-label">{{ _('Serial Port') }}</label>
             <div class="controls">
                 <div class="input-append">
-                    <select data-bind="value: port, options: $root.serialPortsList, optionsCaption: 'Choose a serial port'"></select>
+                    <select data-bind="value: port, valueAllowUnset: true, options: $root.serialPortsList, optionsCaption: 'Choose a serial port'"></select>
                     <button id="AirQualityDeviceAddModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceAddModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
             </div>
@@ -86,7 +85,7 @@
 	</div>
 	<div class="modal-footer">
         <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
-		<a href="#" class="btn btn-primary" data-bind="click: $root.addDeviceToSettings" data-dismiss="modal" aria-hidden="true">{{ _('Add') }}</a>
+		<a href="#" class="btn btn-primary" data-bind="click: $root.addDevice" data-dismiss="modal" aria-hidden="true">{{ _('Add') }}</a>
 	</div>
 </div>
 
@@ -118,18 +117,19 @@
                 <input type="text" class="input-block-level" data-bind="value: location">
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group" data-bind="css: {warning: $root.portUnavailable()}">
             <label class="control-label">{{ _('Serial Port') }}</label>
             <div class="controls">
                 <div class="input-append">
                     <select data-bind="value: port, options: $root.serialPortsListEdit, optionsCaption: 'Choose a serial port'"></select>
                     <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
+                <span class="help-inline" data-bind="visible: $root.portUnavailable()">{{ _('Port currently not connected') }}</span>
             </div>
         </div>
 	</div>
 	<div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _('Close') }}</a>
-		<a href="#" class="btn btn-primary" data-bind="click: $root.applyEditDeviceToSettings" data-dismiss="modal">{{ _('Change') }}</a>
+        <a href="#" class="btn" data-dismiss="modal">{{ _('Cancel') }}</a>
+		<a href="#" class="btn btn-primary" data-bind="click: $root.applyEditDevice" data-dismiss="modal">{{ _('Change') }}</a>
 	</div>
 </div>
