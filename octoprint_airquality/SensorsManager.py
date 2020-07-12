@@ -31,7 +31,7 @@ class SensorsManager():
         # If being called directly or as a result of the printer port changing
         if new_port == None or new_port != self.printer_port:
             self.find_serial_ports()
-            self._plugin_manager.send_plugin_message(self._identifier, self.serial_port_details)
+            self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
         # self.initialise_sensors()
 
     def start_monitoring(self):

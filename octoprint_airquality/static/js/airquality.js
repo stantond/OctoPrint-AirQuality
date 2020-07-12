@@ -22,6 +22,7 @@ $(function() {
         self.selectedDeviceIndex = 0;
         self.unsavedChanges = ko.observable(false);
 
+        /* Used by the Edit template to show a warning when the selected port is unavailable */
         self.portUnavailable = ko.computed(function() {
             if (self.selectedDevice() !== undefined) {
                 if (self.serialPortsList.indexOf(self.selectedDevice().port()) == -1 && self.selectedDevice().port() !== undefined) {
@@ -32,6 +33,8 @@ $(function() {
             };
         });
 
+        /* Provides a list of serial ports for the user to choose from during device edit,
+        including the currently set port even if it's not plugged in. */
         self.serialPortsListEdit = ko.computed(function() {
             var fullList = [];
             fullList.push(...self.serialPortsList());
@@ -43,15 +46,10 @@ $(function() {
             return fullList;
         });
 
+        /* Shows or hides the Unsaved Changes warning whenever the array of devices is changed */
         ko.computed(function() {
             return ko.toJSON(self.arrDevices);
         }).subscribe(function() {
-            // @TODO find out why settings arrDevices and observable arrDevices are always identical
-            console.log("change to arrDevices detected");
-            console.log("js arrDevices");
-            console.log(ko.toJSON(self.arrDevices()));
-            console.log("settings arrDevices");
-            console.log(ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
             var unsavedDevices = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
             if (unsavedDevices) {
                 self.unsavedChanges(true);
@@ -70,8 +68,20 @@ $(function() {
             return self.supportedDevices[model];
         }
 
+        /* Manually push each existing setting into JS objects to allow them to be
+        edited without immediately changing the underlying stored values */
         self.onBeforeBinding = function() {
-            self.arrDevices.push(...self.settings.settings.plugins.airquality.arrDevices());
+            var settingsArrDevicesJS = ko.mapping.toJS(self.settings.settings.plugins.airquality.arrDevices());
+            settingsArrDevicesJS.forEach(function(device){
+                device = {
+                    'location':ko.observable(device.location),
+                    'model':ko.observable(device.model),
+                    'name':ko.observable(device.name),
+                    'port':ko.observable(device.port)
+                };
+                self.arrDevices.push(device);
+            });
+            
         }
 
         self.onAfterBinding = function() {
@@ -79,8 +89,13 @@ $(function() {
         }
 
         self.onDataUpdaterPluginMessage = function(pluginName, message) {
-            if (pluginName == "airquality") {
-                self.serialPorts = message;
+            if (pluginName != "airquality") {
+                // Ignore messages for other plugins
+				return;
+            }
+            if (message.serial_ports) {
+                // Store the updated dictionary of serial ports
+                self.serialPorts = message.serial_ports;
                 self.serialPortsList(Object.keys(self.serialPorts));
             }
         }
@@ -89,6 +104,9 @@ $(function() {
             self.showAlert(false);
         }
 
+        /* User can manually the backend to check for available sensors. The actual
+        dictionary of updated sensors comes back using the Plugin Message mechanism.
+        Disables the button until the flash message has cleared. */
         self.refreshSensors = function(button=null) {
             var alert = undefined;
             button.disabled=true;
@@ -128,6 +146,8 @@ $(function() {
             })
         }
 
+        /* Silently ask the backend to check for available sensors when the settings screen is shown.
+        The actual dictionary of updated sensors comes back using the Plugin Message mechanism*/
         self.onSettingsShown = function() {
             $.ajax({
                 url: API_BASEURL + "plugin/airquality",
@@ -140,58 +160,68 @@ $(function() {
             })
         }
 
+        /* Saves changes made to the temporary settings objects into the settings file,
+        causing them to be applied, and hides the Unsaved Changes message */
         self.onSettingsBeforeSave = function(payload) {
-            // @TODO Save settings only when the Save button is pressed, and restart the sensor thread
             var unsavedDevices = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
-            console.log("before");
-            console.log(self.settings.settings.plugins.airquality.arrDevices());
             if (unsavedDevices) {
-                self.settings.settings.plugins.airquality.arrDevices(ko.toJS(self.arrDevices()));
+                self.settings.settings.plugins.airquality.arrDevices(self.arrDevices());
+                self.unsavedChanges(false);
             };
-            console.log("after");
-            console.log(self.settings.settings.plugins.airquality.arrDevices());
+            // @TODO restart the sensor thread to apply the new changes
         }
 
+        /* Shows the Add Device modal. Provide an empty set of observables for Add Device functionality */
         self.showAddDeviceModal = function() {
             self.selectedDevice({
-                'name':ko.observable(''),
-                'model':ko.observable(''),
                 'location':ko.observable(''),
+                'model':ko.observable(''),
+                'name':ko.observable(''),
                 'port':ko.observable('')
             });
             $("#AirQualityDeviceAddModal").modal("show");
         }
 
+        /* Add the new device to the temporary devices array */
         self.addDevice = function() {
             self.arrDevices.push(self.selectedDevice());
         }
 
+        /* Shows the Edit Device modal. Stores the index so that changes can be applied to the array
+        on confirmation instead of instantly */
         self.showEditDeviceModal = function(device) {
-            self.selectedDeviceIndex = self.arrDevices.indexOf(device);
             nonObservableDevice = ko.toJS(device);
+            nonObservableArray = ko.toJS(self.arrDevices);
+            self.selectedDeviceIndex = nonObservableArray.findIndex(function(item) {
+                return ko.toJSON(nonObservableDevice) == ko.toJSON(item);
+            });
             self.selectedDevice({
-                'name':ko.observable(nonObservableDevice["name"]),
-                'model':ko.observable(nonObservableDevice["model"]),
                 'location':ko.observable(nonObservableDevice["location"]),
+                'model':ko.observable(nonObservableDevice["model"]),
+                'name':ko.observable(nonObservableDevice["name"]),
                 'port':ko.observable(nonObservableDevice["port"])
             });
             $("#AirQualityDeviceEditModal").modal("show");
         }
 
+        /* Apply the changes to the temporary devices array. By copying instead of relying on observables,
+        edit does not make changes to the array until the user confirms this is what they want */
         self.applyEditDevice = function(device) {
             // @todo Ensure that port is not in use by multiple devices
             nonObservableDevice = ko.toJS(device);
-            self.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
-            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
             self.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
+            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
+            self.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
             self.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"]);
         }
 
+        /* Removes the passed device from the temporary devices array. */
         self.removeDevice = function(device) {
             self.arrDevices.remove(device);
         }
     }
 
+    /* Utility function to make dictionaries into an array that a ko.observable can use */
     function mapDictionaryToArray(dictionary) {
         var result = [];
         for (var key in dictionary) {
