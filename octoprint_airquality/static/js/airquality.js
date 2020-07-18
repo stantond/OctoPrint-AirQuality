@@ -34,10 +34,19 @@ $(function() {
         });
 
         /* Provides a list of serial ports for the user to choose from during device edit,
-        including the currently set port even if it's not plugged in. */
+        including the currently set port even if it's not plugged in, and
+        excluding ports already in use by this plugin for other devices */
         self.serialPortsListEdit = ko.computed(function() {
             var fullList = [];
             fullList.push(...self.serialPortsList());
+            ko.utils.arrayForEach(self.arrDevices(), function(device) {
+                if (device.port() !== null && device.port() !== undefined){
+                    var index = fullList.indexOf(device.port());
+                    if (index > -1) {
+                        fullList.splice(index, 1);
+                      }
+                }
+            });
             if (self.selectedDevice() !== undefined) {
                 if (fullList.indexOf(self.selectedDevice().port()) == -1 && self.selectedDevice().port() !== undefined) {
                     fullList.push(ko.toJS(self.selectedDevice().port()));
