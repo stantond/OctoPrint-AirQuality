@@ -214,14 +214,15 @@ $(function() {
         }
 
         /* Apply the changes to the temporary devices array. By copying instead of relying on observables,
-        edit does not make changes to the array until the user confirms this is what they want */
+        edit does not make changes to the array until the user confirms this is what they want.
+        Empty selections are stored as empty strings for consistency. */
+        // @todo make sure it's still OK to use "" instead of null when checking for ports in backend
         self.applyEditDevice = function(device) {
-            // @todo Ensure that port is not in use by multiple devices
             nonObservableDevice = ko.toJS(device);
             self.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
-            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"]);
+            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"] ?? "");
             self.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
-            self.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"]);
+            self.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"] ?? "");
         }
 
         /* Removes the passed device from the temporary devices array. */
