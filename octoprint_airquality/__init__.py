@@ -12,7 +12,7 @@ from __future__ import absolute_import
 import flask
 import octoprint.plugin
 from octoprint.server import user_permission
-from . import SensorsManager
+from . import DatabaseManager, SensorsManager
 
 class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
                        octoprint.plugin.AssetPlugin,
@@ -26,6 +26,9 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 	# 	"Plantower PMS7003": "7003",
 	# 	"Plantower PMSA003": "A003"
 	# }
+
+	def on_startup(self):
+		self.database_manager = DatabaseManager.DatabaseManager(self)
 
 	def on_after_startup(self):
 		self._logger.info("Starting sensor manager...")
