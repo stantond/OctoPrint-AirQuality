@@ -27,11 +27,8 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 	# 	"Plantower PMSA003": "A003"
 	# }
 
-	def on_startup(self):
-		self.database_manager = DatabaseManager.DatabaseManager(self)
-
 	def on_after_startup(self):
-		self._logger.info("Starting sensor manager...")
+		self.database_manager = DatabaseManager.DatabaseManager(self)
 		self.sensors_manager = SensorsManager.SensorsManager(self)
 	# 	if self.sensors_manager.is_connected():
 	# 		self._logger.info("Sensors are alive!")

@@ -9,8 +9,9 @@ import plantower, time
 
 class SensorsManager():
     def __init__(self, plugin):
-        self._identifier = plugin._identifier
         self._logger = plugin._logger
+        self._logger.info("Starting sensor manager...")
+        self._identifier = plugin._identifier
         self._plugin_manager = plugin._plugin_manager
         self._printer = plugin._printer
         self._settings = plugin._settings
