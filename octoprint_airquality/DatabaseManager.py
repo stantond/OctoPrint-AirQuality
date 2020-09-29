@@ -8,7 +8,7 @@ class DatabaseManager():
         self._logger.info("Starting database manager...")
 
         self.db_path = os.path.join(plugin.get_plugin_data_folder(), "air_quality.db")
-        self.create_database()
+        self.build_test_database()
 
     def create_database(self):
         try:
@@ -70,12 +70,11 @@ class DatabaseManager():
         except:
             e = sys.exc_info()[0]
             self._logger.error("Error emptying database: %s" % e)
-        self.create_database()
 
     def insert_device(self, device):
         db = sqlite3.connect(self.db_path)
         cursor = db.cursor()
-        cursor.execute('''INSERT INTO devices(created, name, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?)''', [device['name'], device['model'], device['port']])
+        cursor.execute('''INSERT INTO devices(created, name, location_id, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?,?)''', [device['name'], device['location_id'], device['model'], device['port']])
         db.commit()
         db.close()
         pass
@@ -91,13 +90,21 @@ class DatabaseManager():
     def insert_reading(self):
         pass
 
-    def populate_test_data(self):
-        self.insert_location({
-            "name": "Laboratory"
+    def build_test_database(self):
+        self.empty_database()
+        self.create_database()
+        self.insert_location({"name": "Enclosure (Internal)"})
+        self.insert_location({"name": "Enclosure (External)"})
+        self.insert_location({"name": "Office"})
+        self.insert_device({
+            "name": "Internal PM Sensor",
+            "location_id": "1",
+            "model": "A003",
+            "port": "COM4"
         })
         self.insert_device({
-            "name": "test",
-            "location_id": "1",
+            "name": "External PM Sensor",
+            "location_id": "2",
             "model": "A003",
             "port": "COM4"
         })
