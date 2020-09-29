@@ -167,6 +167,22 @@ $(function() {
                 }),
                 contentType: "application/json; charset=UTF-8"
             })
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "get_devices"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(responseText) {
+                    console.log("Got response:");
+                    console.log(gettext(responseText));
+                },
+                error: function(responseText, errorThrown) { 
+                    console.log(gettext(responseText["message"] + ": " + errorThrown));
+                } 
+            })
         }
 
         /* Saves changes made to the temporary settings objects into the settings file,

@@ -51,6 +51,7 @@ class DatabaseManager():
                     FOREIGN KEY(device_id) REFERENCES devices(id),
                     FOREIGN KEY(location_id) REFERENCES locations(id)
                 )''')
+            cursor.close()
             db.commit()
             db.close()
         except:
@@ -65,27 +66,50 @@ class DatabaseManager():
             cursor.execute('''DROP TABLE IF EXISTS readings;''')
             cursor.execute('''DROP TABLE IF EXISTS devices;''')
             cursor.execute('''DROP TABLE IF EXISTS locations;''')
+            cursor.close()
             db.commit()
             db.close()
         except:
             e = sys.exc_info()[0]
             self._logger.error("Error emptying database: %s" % e)
 
+    def get_devices(self):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''SELECT id, name, created, modified, location_id, model, port FROM devices''')
+            devices = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+            cursor.close()
+            db.close()
+            return devices
+        except:
+            e = sys.exc_info()[0]
+            self._logger.error("Error getting devices from database: %s" % e)
+                
+
     def insert_device(self, device):
-        db = sqlite3.connect(self.db_path)
-        cursor = db.cursor()
-        cursor.execute('''INSERT INTO devices(created, name, location_id, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?,?)''', [device['name'], device['location_id'], device['model'], device['port']])
-        db.commit()
-        db.close()
-        pass
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO devices(created, name, location_id, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?,?)''', [device['name'], device['location_id'], device['model'], device['port']])
+            cursor.close()
+            db.commit()
+            db.close()
+        except:
+            e = sys.exc_info()[0]
+            self._logger.error("Error inserting device into database: %s" % e)
 
     def insert_location(self, location):
-        db = sqlite3.connect(self.db_path)
-        cursor = db.cursor()
-        cursor.execute('''INSERT INTO locations(created, name) VALUES(CURRENT_TIMESTAMP,?)''', [location['name']])
-        db.commit()
-        db.close()
-        pass
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO locations(created, name) VALUES(CURRENT_TIMESTAMP,?)''', [location['name']])
+            cursor.close()
+            db.commit()
+            db.close()
+        except:
+            e = sys.exc_info()[0]
+            self._logger.error("Error inserting location into database: %s" % e)
 
     def insert_reading(self):
         pass
@@ -93,19 +117,22 @@ class DatabaseManager():
     def build_test_database(self):
         self.empty_database()
         self.create_database()
-        self.insert_location({"name": "Enclosure (Internal)"})
-        self.insert_location({"name": "Enclosure (External)"})
-        self.insert_location({"name": "Office"})
-        self.insert_device({
-            "name": "Internal PM Sensor",
-            "location_id": "1",
-            "model": "A003",
-            "port": "COM4"
-        })
-        self.insert_device({
-            "name": "External PM Sensor",
-            "location_id": "2",
-            "model": "A003",
-            "port": "COM4"
-        })
-        pass
+        try:
+            self.insert_location({"name": "Enclosure (Internal)"})
+            self.insert_location({"name": "Enclosure (External)"})
+            self.insert_location({"name": "Office"})
+            self.insert_device({
+                "name": "Internal PM Sensor",
+                "location_id": "1",
+                "model": "A003",
+                "port": "COM4"
+            })
+            self.insert_device({
+                "name": "External PM Sensor",
+                "location_id": "2",
+                "model": "7003",
+                "port": "COM5"
+            })
+        except:
+            e = sys.exc_info()[0]
+            self._logger.error("Error building test database: %s" % e)

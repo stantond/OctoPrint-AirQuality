@@ -79,13 +79,23 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_api_commands(self):
 		return dict(
+			get_devices=[],
 			refresh_sensors=[]
 		)
 
 	def on_api_command(self, command, data):
 		if not user_permission.can():
 			return flask.make_response("User does not have permission", 403)
-		self._logger.info(command)
+		self._logger.info("API command received: " + command)
+		if command == "get_devices":
+			try:
+				devices = self.database_manager.get_devices()
+				print(flask.jsonify({"devices": devices}))
+				response = flask.make_response(flask.jsonify({"devices": devices}), 200)
+				response.headers["Content-Type"] = "application/json"
+				return response
+			except:
+				return flask.make_response('{"message": "Failed to get devices"}', 500)
 		if command == "refresh_sensors":
 			try:
 				self.sensors_manager.refresh_sensors()
