@@ -10,6 +10,7 @@ from __future__ import absolute_import
 # Take a look at the documentation on what other plugin mixins are available.
 
 import flask
+import json
 import octoprint.plugin
 from octoprint.server import user_permission
 from . import DatabaseManager, SensorsManager
@@ -79,7 +80,14 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_api_commands(self):
 		return dict(
+			create_device=[],
 			get_devices=[],
+			update_device=[],
+			delete_device=[],
+			create_location=[],
+			get_locations=[],
+			update_location=[],
+			delete_location=[],
 			refresh_sensors=[]
 		)
 
@@ -87,16 +95,61 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 		if not user_permission.can():
 			return flask.make_response("User does not have permission", 403)
 		self._logger.info("API command received: " + command)
-		if command == "get_devices":
+		if command == "create_device":
+			try:
+				self.database_manager.insert_device(data["device"])
+				return flask.make_response('{"message": "Device created"}', 201)
+			except:
+				return flask.make_response('{"message": "Failed to create device"}', 500)
+		elif command == "get_devices":
 			try:
 				devices = self.database_manager.get_devices()
-				print(flask.jsonify({"devices": devices}))
 				response = flask.make_response(flask.jsonify({"devices": devices}), 200)
 				response.headers["Content-Type"] = "application/json"
 				return response
 			except:
 				return flask.make_response('{"message": "Failed to get devices"}', 500)
-		if command == "refresh_sensors":
+		elif command == "update_device":
+			try:
+				self.database_manager.update_device(data["device"])
+				return flask.make_response('{"message": "Device updated"}', 200)
+			except:
+				return flask.make_response('{"message": "Failed to update device"}', 500)
+		elif command == "delete_device":
+			try:
+				self.database_manager.delete_device(data["device"])
+				return flask.make_response('{"message": "Device deleted"}', 200)
+				return response
+			except:
+				return flask.make_response('{"message": "Failed to delete device"}', 500)
+		elif command == "create_location":
+			try:
+				self.database_manager.insert_location(data["location"])
+				return flask.make_response('{"message": "Location created"}', 201)
+			except:
+				return flask.make_response('{"message": "Failed to create location"}', 500)
+		elif command == "get_locations":
+			try:
+				locations = self.database_manager.get_locations()
+				response = flask.make_response(flask.jsonify({"locations": locations}), 200)
+				response.headers["Content-Type"] = "application/json"
+				return response
+			except:
+				return flask.make_response('{"message": "Failed to get devices"}', 500)
+		elif command == "update_location":
+			try:
+				self.database_manager.update_location(data["location"])
+				return flask.make_response('{"message": "Location updated"}', 200)
+			except:
+				return flask.make_response('{"message": "Failed to update location"}', 500)
+		elif command == "delete_location":
+			try:
+				self.database_manager.delete_location(data["location"])
+				return flask.make_response('{"message": "Location deleted"}', 200)
+				return response
+			except:
+				return flask.make_response('{"message": "Failed to delete device"}', 500)
+		elif command == "refresh_sensors":
 			try:
 				self.sensors_manager.refresh_sensors()
 				return flask.make_response('{"message": "Sensors refreshed"}', 200)

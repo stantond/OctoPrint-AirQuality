@@ -15,12 +15,15 @@ $(function() {
         };
 
         self.settings = parameters[0];
-        self.arrDevices = ko.observableArray();
+
+        self.devices = ko.observableArray();
+        self.locations = ko.observableArray();
+
         self.serialPorts = {};
         self.serialPortsList = ko.observableArray();
         self.selectedDevice = ko.observable();
-        self.selectedDeviceIndex = 0;
-        self.unsavedChanges = ko.observable(false);
+        self.selectedLocation = ko.observable();
+        self.recentChanges = ko.observable(false);
 
         /* Used by the Edit template to show a warning when the selected port is unavailable */
         self.portUnavailable = ko.computed(function() {
@@ -39,7 +42,7 @@ $(function() {
         self.serialPortsListEdit = ko.computed(function() {
             var fullList = [];
             fullList.push(...self.serialPortsList());
-            ko.utils.arrayForEach(self.arrDevices(), function(device) {
+            ko.utils.arrayForEach(self.devices(), function(device) {
                 if (device.port() !== null && device.port() !== undefined){
                     var index = fullList.indexOf(device.port());
                     if (index > -1) {
@@ -55,42 +58,27 @@ $(function() {
             return fullList;
         });
 
-        /* Shows or hides the Unsaved Changes warning whenever the array of devices is changed */
-        ko.computed(function() {
-            return ko.toJSON(self.arrDevices);
-        }).subscribe(function() {
-            var unsavedDevices = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
-            if (unsavedDevices) {
-                self.unsavedChanges(true);
-            } else {
-                self.unsavedChanges(false);
-            };
-        });
-
         self.models = ko.observableArray(mapDictionaryToArray(self.supportedDevices));
 
         self.alertMessage = ko.observable("");
         self.alertType = ko.observable("alert-warning");
         self.showAlert = ko.observable(false);
 
-        self.getPrettyDeviceName = function(model) {
+        self.getPrettyModel = function(model) {
             return self.supportedDevices[model];
         }
 
-        /* Manually push each existing setting into JS objects to allow them to be
-        edited without immediately changing the underlying stored values */
-        self.onBeforeBinding = function() {
-            var settingsArrDevicesJS = ko.mapping.toJS(self.settings.settings.plugins.airquality.arrDevices());
-            settingsArrDevicesJS.forEach(function(device){
-                device = {
-                    'location':ko.observable(device.location),
-                    'model':ko.observable(device.model),
-                    'name':ko.observable(device.name),
-                    'port':ko.observable(device.port)
-                };
-                self.arrDevices.push(device);
+        self.getLocationNamefromId = function(lookupId) {
+            found_location = ko.utils.arrayFirst(self.locations(), function(location) {
+                return lookupId == location.id();
             });
-            
+            if (found_location) { return found_location.name() };
+        }
+
+        /* First load of device and location settings from the database */
+        self.onBeforeBinding = function() {
+            self.loadLocationsFromDatabase();
+            self.loadDevicesFromDatabase();
         }
 
         self.onAfterBinding = function() {
@@ -127,9 +115,9 @@ $(function() {
                     command: "refresh_sensors"
                 }),
                 contentType: "application/json; charset=UTF-8",
-                success: function(responseText) {
+                success: function(response) {
                     if(button!==null) {
-                        alertText = gettext(responseText["message"]);
+                        alertText = gettext(response["message"]);
                         self.alertType("alert-success");
                         self.alertMessage(alertText);
                         self.showAlert(true);
@@ -141,9 +129,9 @@ $(function() {
                         }, 3000);
                     }
                 },
-                error: function(responseText, errorThrown) { 
+                error: function(response, errorThrown) {
                     if(button!==null) {
-                        alert = gettext(responseText["message"] + ": " + errorThrown);
+                        alert = gettext(response["message"] + ": " + errorThrown);
                         self.alertType("alert-error");
                         self.alertMessage(alertText);
                         self.showAlert(true);
@@ -151,7 +139,7 @@ $(function() {
                             button.disabled=false;
                         }, 5000);
                     }
-                } 
+                }
             })
         }
 
@@ -167,6 +155,42 @@ $(function() {
                 }),
                 contentType: "application/json; charset=UTF-8"
             })
+        }
+
+        /* Restarts the sensor reading thread, applying any device and location changes, and hides the Recent Changes message */
+        self.onSettingsBeforeSave = function(payload) {
+            self.recentChanges(false);
+            // @TODO restart the sensor thread to apply the new changes
+        }
+
+        /* Get locations from the database and iteratively push each location into the local locations array with observable attributes*/
+        self.loadLocationsFromDatabase = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "get_locations"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    self.locations([]);
+                    response["locations"].forEach(function(location){
+                        location = {
+                            'id':ko.observable(location.id),
+                            'name':ko.observable(location.name)
+                        };
+                        self.locations.push(location);
+                    });
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Get devices from the database and iteratively push each device into the local locations array with observable attributes*/
+        self.loadDevicesFromDatabase = function() {
             $.ajax({
                 url: API_BASEURL + "plugin/airquality",
                 type: "POST",
@@ -175,53 +199,102 @@ $(function() {
                     command: "get_devices"
                 }),
                 contentType: "application/json; charset=UTF-8",
-                success: function(responseText) {
-                    console.log("Got response:");
-                    console.log(gettext(responseText));
+                success: function(response) {
+                    self.devices([]);
+                    response["devices"].forEach(function(device){
+                        device = {
+                            'id':ko.observable(device.id),
+                            'location_id':ko.observable(device.location_id),
+                            'model':ko.observable(device.model),
+                            'name':ko.observable(device.name),
+                            'port':ko.observable(device.port),
+                            'portAvailable':ko.computed(function() {
+                                if (self.serialPortsList.indexOf(device.port == -1 && device.port !== undefined)) {
+                                    return false;
+                                } else {
+                                    return true;
+                                };
+                            })
+                        };
+                        self.devices.push(device);
+                    });
                 },
-                error: function(responseText, errorThrown) { 
-                    console.log(gettext(responseText["message"] + ": " + errorThrown));
-                } 
-            })
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
         }
 
-        /* Saves changes made to the temporary settings objects into the settings file,
-        causing them to be applied, and hides the Unsaved Changes message */
-        self.onSettingsBeforeSave = function(payload) {
-            var unsavedDevices = (ko.toJSON(self.arrDevices()) !== ko.toJSON(self.settings.settings.plugins.airquality.arrDevices()));
-            if (unsavedDevices) {
-                self.settings.settings.plugins.airquality.arrDevices(self.arrDevices());
-                self.unsavedChanges(false);
-            };
-            // @TODO restart the sensor thread to apply the new changes
-        }
-
-        /* Shows the Add Device modal. Provide an empty set of observables for Add Device functionality */
-        self.showAddDeviceModal = function() {
+        /* Shows the Create Device modal. Provide an empty set of observables for Create Device functionality */
+        self.showCreateDeviceModal = function() {
             self.selectedDevice({
-                'location':ko.observable(''),
+                'location_id':ko.observable(''),
                 'model':ko.observable(''),
                 'name':ko.observable(''),
                 'port':ko.observable('')
             });
-            $("#AirQualityDeviceAddModal").modal("show");
+            $("#AirQualityDeviceCreateModal").modal("show");
         }
 
-        /* Add the new device to the temporary devices array */
-        self.addDevice = function() {
-            self.arrDevices.push(self.selectedDevice());
+        /* Shows the Create Location modal. Provide an empty set of observables for Create Location functionality */
+        self.showCreateLocationModal = function() {
+            self.selectedLocation({
+                'name':ko.observable('')
+            });
+            $("#AirQualityLocationCreateModal").modal("show");
         }
 
-        /* Shows the Edit Device modal. Stores the index so that changes can be applied to the array
-        on confirmation instead of instantly */
+        /* Create the new device in the database. Reloads devices from database if successful*/
+        self.createDevice = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "create_device",
+                    device: ko.toJS(self.selectedDevice())
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityDeviceCreateModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadDevicesFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Create the new location in the database. Reloads locations from database if successful*/
+        self.createLocation = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "create_location",
+                    location: ko.toJS(self.selectedLocation())
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityLocationCreateModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadLocationsFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Shows the Edit Device modal. Creates a copy of the device to manipulate to prevent the devices
+        table updating at the same time. */
         self.showEditDeviceModal = function(device) {
             nonObservableDevice = ko.toJS(device);
-            nonObservableArray = ko.toJS(self.arrDevices);
-            self.selectedDeviceIndex = nonObservableArray.findIndex(function(item) {
-                return ko.toJSON(nonObservableDevice) == ko.toJSON(item);
-            });
             self.selectedDevice({
-                'location':ko.observable(nonObservableDevice["location"]),
+                'id':ko.observable(nonObservableDevice["id"]),
+                'location_id':ko.observable(nonObservableDevice["location_id"]),
                 'model':ko.observable(nonObservableDevice["model"]),
                 'name':ko.observable(nonObservableDevice["name"]),
                 'port':ko.observable(nonObservableDevice["port"])
@@ -229,21 +302,119 @@ $(function() {
             $("#AirQualityDeviceEditModal").modal("show");
         }
 
-        /* Apply the changes to the temporary devices array. By copying instead of relying on observables,
-        edit does not make changes to the array until the user confirms this is what they want.
-        Empty selections are stored as empty strings for consistency. */
-        // @todo make sure it's still OK to use "" instead of null when checking for ports in backend
-        self.applyEditDevice = function(device) {
-            nonObservableDevice = ko.toJS(device);
-            self.arrDevices()[self.selectedDeviceIndex].location(nonObservableDevice["location"]);
-            self.arrDevices()[self.selectedDeviceIndex].model(nonObservableDevice["model"] ?? "");
-            self.arrDevices()[self.selectedDeviceIndex].name(nonObservableDevice["name"]);
-            self.arrDevices()[self.selectedDeviceIndex].port(nonObservableDevice["port"] ?? "");
+        /* Shows the Edit Location modal. Creates a copy of the location to manipulate to prevent the locations
+        table updating at the same time. */
+        self.showEditLocationModal = function(location) {
+            nonObservableLocation = ko.toJS(location);
+            self.selectedLocation({
+                'id':ko.observable(nonObservableLocation["id"]),
+                'name':ko.observable(nonObservableLocation["name"])
+            });
+            $("#AirQualityLocationEditModal").modal("show");
         }
 
-        /* Removes the passed device from the temporary devices array. */
-        self.removeDevice = function(device) {
-            self.arrDevices.remove(device);
+        /* Update the device in the database. Reloads devices from database if successful*/
+        self.editDevice = function(device) {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "update_device",
+                    device: ko.toJS(self.selectedDevice())
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityDeviceEditModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadDevicesFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Update the location in the database. Reloads locations from database if successful*/
+        self.editLocation = function(location) {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "update_location",
+                    location: ko.toJS(self.selectedLocation())
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityLocationEditModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadLocationsFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Shows the Delete Device confirmation modal. */
+        self.showDeleteDeviceModal = function(device) {
+            self.selectedDevice(device);
+            $("#AirQualityDeviceDeleteModal").modal("show");
+        }
+
+        /* Shows the Delete Location confirmation modal. */
+        self.showDeleteLocationModal = function(location) {
+            self.selectedLocation(location);
+            $("#AirQualityLocationDeleteModal").modal("show");
+        }
+
+        /* Deletes the device from the database. Reloads devices from database if successful*/
+        self.deleteDevice = function(device) {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "delete_device",
+                    device: {
+                        "id": ko.toJSON(device.id())
+                    }
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityDeviceDeleteModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadDevicesFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
+        /* Deletes the location from the database. Reloads locations from database if successful*/
+        self.deleteLocation = function(location) {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "delete_location",
+                    location: {
+                        "id": ko.toJSON(location.id())
+                    }
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    $("#AirQualityLocationDeleteModal").modal("hide");
+                    self.recentChanges(true);
+                    self.loadLocationsFromDatabase();
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
         }
     }
 

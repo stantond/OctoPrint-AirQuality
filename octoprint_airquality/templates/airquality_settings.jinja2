@@ -1,135 +1,18 @@
-<h3>{{ _('Air Quality Plugin Settings') }}</h4>
-<div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.unsavedChanges()">
-    <span>{{ _('You have unsaved changes...') }}</span>
-</div>
-<h4>{{ _('Devices') }}</h4>
-<table class="table table-condensed">
-	<thead>
-		<tr>
-			<td style="text-align:center">{{ _('Name') }}</td>
-			<td style="text-align:center">{{ _('Model') }}</td>
-            <td style="text-align:center">{{ _('Physical Location') }}</td>
-            <td style="text-align:center">{{ _('Port') }}</td>
-			<td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showAddDeviceModal"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
-		</tr>
-	</thead>
-    <tbody data-bind="sortable: { data: $root.arrDevices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
-		<tr data-bind="attr: {title: name}">
-			<td><span data-bind="text: name" /></td>
-			<td><span data-bind="text: $root.getPrettyDeviceName(model())" /></td>
-            <td><span data-bind="text: location" /></td>
-            <td><span data-bind="text: port" /></td>
-			<td style="text-align:right">
-				<div class="btn-group">
-					<a href="#" class="btn btn-mini moveDevice"><i class="fa fa-arrows-alt" aria-hidden="true"></i></a>
-					<a href="#" class="btn btn-mini" data-bind="click: $root.showEditDeviceModal"><i class="fa fa-pencil" aria-hidden="true"></i></a>
-					<a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.removeDevice"><i class="fa fa-times" aria-hidden="true"></i></a>
-				</div>
-            </td>
-		</tr>
-	</tbody>
-</table>
-{# <h6>{{ _('Preferences') }}</h4>
 <form class="form-horizontal">
-    <div class="control-group">
-        <label class="control-label">{{ _('Sensor Port') }}</label>
-        <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.plugins.airquality.sensor_port">
+    <h3>{{ _('Air Quality Plugin Settings') }}</h4>
+    <div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.recentChanges()">
+        <span>{{ _('Your changes are saved but not in use. Click Save to restart the sensor monitor.') }}</span>
+    </div>
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#settings_airquality_devices" data-toggle="tab">Devices</a></li>
+        <li><a href="#settings_airquality_locations" data-toggle="tab">Locations</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="settings_airquality_devices" class="tab-pane active">
+            {% include 'airquality_settings_devices.jinja2' %}
+        </div>
+        <div id="settings_airquality_locations" class="tab-pane">
+            {% include 'airquality_settings_locations.jinja2' %}
         </div>
     </div>
-    <div class="control-group">
-        <label class="control-label">{{ _('Sensor Baud Rate') }}</label>
-        <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.plugins.airquality.sensor_baud_rate">
-        </div>
-    </div>
-</form> #}
-
-<div id="AirQualityDeviceAddModal" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
-	<div class="modal-header">
-		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-		<h3>{{ _('Add a new device') }}</h3>
-	</div>
-	<div class="modal-body">
-        <div class="alert" style="text-align: center;" data-bind="visible: $root.showAlert(), css: $root.alertType">
-            <span data-bind="text: $root.alertMessage"></span>
-            <button type="button" class="close" data-bind="click: $root.hideAlert">&times;</button>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Name') }}</label>
-            <div class="controls">
-                <input type="text" class="input-block-level" data-bind="value: name">
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Model') }}</label>
-            <div class="controls">
-                <select data-bind="value: model, options: $root.models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Physical Location') }}</label>
-            <div class="controls">
-                <input type="text" class="input-block-level" data-bind="value: location">
-            </div>
-        </div>
-        <div class="control-group ">
-            <label class="control-label">{{ _('Serial Port') }}</label>
-            <div class="controls">
-                <div class="input-append">
-                    <select data-bind="value: port, valueAllowUnset: true, options: $root.serialPortsList, optionsCaption: 'Choose a serial port'"></select>
-                    <button id="AirQualityDeviceAddModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceAddModalRefreshButton); }">{{ _('Refresh') }}</button>
-                </div>
-            </div>
-        </div>
-	</div>
-	<div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
-		<a href="#" class="btn btn-primary" data-bind="click: $root.addDevice" data-dismiss="modal" aria-hidden="true">{{ _('Add') }}</a>
-	</div>
-</div>
-
-<div id="AirQualityDeviceEditModal" data-bind="with: selectedDevice" class="modal hide fade" data-backdrop="static">
-	<div class="modal-header">
-		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-		<h3>{{ _('Edit an existing device') }}</h3>
-	</div>
-	<div class="modal-body">
-        <div class="alert" style="text-align: center;" data-bind="visible: $root.showAlert(), css: $root.alertType">
-                <span data-bind="text: $root.alertMessage"></span>
-                <button type="button" class="close" data-bind="click: $root.hideAlert">&times;</button>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Name') }}</label>
-            <div class="controls">
-                <input type="text" class="input-block-level" data-bind="value: name">
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Model') }}</label>
-            <div class="controls">
-                <select data-bind="value: model, options: $root.models, optionsText: 'value',  optionsValue: 'key', optionsCaption: 'Choose a model'"></select>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Physical Location') }}</label>
-            <div class="controls">
-                <input type="text" class="input-block-level" data-bind="value: location">
-            </div>
-        </div>
-        <div class="control-group" data-bind="css: {warning: $root.portUnavailable()}">
-            <label class="control-label">{{ _('Serial Port') }}</label>
-            <div class="controls">
-                <div class="input-append">
-                    <select data-bind="value: port, options: $root.serialPortsListEdit, optionsCaption: 'Choose a serial port'"></select>
-                    <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
-                </div>
-                <span class="help-inline" data-bind="visible: $root.portUnavailable()">{{ _('Port currently not connected') }}</span>
-            </div>
-        </div>
-	</div>
-	<div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _('Cancel') }}</a>
-		<a href="#" class="btn btn-primary" data-bind="click: $root.applyEditDevice" data-dismiss="modal">{{ _('Change') }}</a>
-	</div>
-</div>
+</form>

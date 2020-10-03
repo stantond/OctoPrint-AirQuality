@@ -6,7 +6,6 @@ class DatabaseManager():
     def __init__(self, plugin):
         self._logger = plugin._logger
         self._logger.info("Starting database manager...")
-
         self.db_path = os.path.join(plugin.get_plugin_data_folder(), "air_quality.db")
         self.build_test_database()
 
@@ -30,7 +29,7 @@ class DatabaseManager():
                     name        TEXT,
                     location_id,
                     model       TEXT,
-                    port        TEXT,
+                    port        TEXT DEFAULT NULL,
                     FOREIGN KEY(location_id) REFERENCES locations(id)
                 )''')
             cursor.execute(
@@ -54,8 +53,7 @@ class DatabaseManager():
             cursor.close()
             db.commit()
             db.close()
-        except:
-            e = sys.exc_info()[0]
+        except Exception as e:
             self._logger.error("Error creating database: %s" % e)
 
     def empty_database(self):
@@ -69,9 +67,30 @@ class DatabaseManager():
             cursor.close()
             db.commit()
             db.close()
-        except:
-            e = sys.exc_info()[0]
+        except Exception as e:
             self._logger.error("Error emptying database: %s" % e)
+
+    def insert_device(self, device):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO devices(created, name, location_id, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?,?)''', [device.get('name'), device.get('location_id'), device.get('model'), device.get('port')])
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error inserting device into database: %s" % e)
+
+    def insert_location(self, location):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO locations(created, name) VALUES(CURRENT_TIMESTAMP,?)''', [location.get('name')])
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error inserting location into database: %s" % e)
 
     def get_devices(self):
         try:
@@ -82,34 +101,64 @@ class DatabaseManager():
             cursor.close()
             db.close()
             return devices
-        except:
-            e = sys.exc_info()[0]
+        except Exception as e:
             self._logger.error("Error getting devices from database: %s" % e)
-                
 
-    def insert_device(self, device):
+    def get_locations(self):
         try:
             db = sqlite3.connect(self.db_path)
             cursor = db.cursor()
-            cursor.execute('''INSERT INTO devices(created, name, location_id, model, port) VALUES(CURRENT_TIMESTAMP,?,?,?,?)''', [device['name'], device['location_id'], device['model'], device['port']])
+            cursor.execute('''SELECT id, name, created, modified FROM locations''')
+            locations = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
             cursor.close()
-            db.commit()
             db.close()
-        except:
-            e = sys.exc_info()[0]
-            self._logger.error("Error inserting device into database: %s" % e)
+            return locations
+        except Exception as e:
+            self._logger.error("Error getting locations from database: %s" % e)
 
-    def insert_location(self, location):
+    def update_device(self, device):
         try:
             db = sqlite3.connect(self.db_path)
             cursor = db.cursor()
-            cursor.execute('''INSERT INTO locations(created, name) VALUES(CURRENT_TIMESTAMP,?)''', [location['name']])
+            cursor.execute('''UPDATE devices SET name=?, location_id=?, model=?, port=? WHERE id=?''', (device.get('name'), device.get('location_id'), device.get('model'), device.get('port'), device.get('id')))
             cursor.close()
             db.commit()
             db.close()
-        except:
-            e = sys.exc_info()[0]
-            self._logger.error("Error inserting location into database: %s" % e)
+        except Exception as e:
+            self._logger.error("Error updating device in database: %s" % e)
+
+    def update_location(self, location):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''UPDATE locations SET name=? WHERE id=?''', (location.get('name'), location.get('id')))
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error updating location in database: %s" % e)
+
+    def delete_device(self, device):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''DELETE FROM devices WHERE id=?''', device.get('id'))
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error deleting device from database: %s" % e)
+
+    def delete_location(self, location):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''DELETE FROM locations WHERE id=?''', location.get('id'))
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error deleting location from database: %s" % e)
 
     def insert_reading(self):
         pass
@@ -133,6 +182,5 @@ class DatabaseManager():
                 "model": "7003",
                 "port": "COM5"
             })
-        except:
-            e = sys.exc_info()[0]
+        except Exception as e:
             self._logger.error("Error building test database: %s" % e)
