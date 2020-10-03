@@ -173,13 +173,13 @@ class DatabaseManager():
             self.insert_device({
                 "name": "Internal PM Sensor",
                 "location_id": "1",
-                "model": "A003",
-                "port": "COM4"
+                "model": "PMSA003",
+                "port": "COM3"
             })
             self.insert_device({
                 "name": "External PM Sensor",
                 "location_id": "2",
-                "model": "7003",
+                "model": "PMS7003",
                 "port": "COM5"
             })
         except Exception as e:

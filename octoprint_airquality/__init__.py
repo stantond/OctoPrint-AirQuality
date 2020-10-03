@@ -30,7 +30,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 
 	def on_after_startup(self):
 		self.database_manager = DatabaseManager.DatabaseManager(self)
-		self.sensors_manager = SensorsManager.SensorsManager(self)
+		self.sensors_manager = SensorsManager.SensorsManager(self, self.database_manager)
 	# 	if self.sensors_manager.is_connected():
 	# 		self._logger.info("Sensors are alive!")
 	# 	else:

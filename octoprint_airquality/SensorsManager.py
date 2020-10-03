@@ -6,15 +6,17 @@ import threading
 import serial
 from serial.tools import list_ports
 import plantower, time
+from pms.sensor import SensorReader
 
 class SensorsManager():
-    def __init__(self, plugin):
+    def __init__(self, plugin, database_manager):
         self._logger = plugin._logger
         self._logger.info("Starting sensor manager...")
         self._identifier = plugin._identifier
         self._plugin_manager = plugin._plugin_manager
         self._printer = plugin._printer
         self._settings = plugin._settings
+        self.database_manager = database_manager
 
         self.printer_port = ""
         self.serial_ports = []
@@ -33,7 +35,7 @@ class SensorsManager():
         if new_port == None or new_port != self.printer_port:
             self.find_serial_ports()
             self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
-        # self.initialise_sensors()
+        self.initialise_sensors()
 
     def start_monitoring(self):
         # @TODO If > 0 active sensors then
@@ -42,11 +44,18 @@ class SensorsManager():
 
     def initialise_sensors(self):
         self._logger.info("Initialising sensors...")
-        sensor = plantower.Plantower(port=self._settings.get(["sensor_port"]))
-        sensor.mode_change(plantower.PMS_PASSIVE_MODE)
-        self.sensors.append(sensor)
+        self.sensors = []
+        devices = self.database_manager.get_devices()
+        for device in devices:
+            if device["port"] in self.serial_port_details.keys():
+                device["reader"] = SensorReader(device["model"], device["port"], 0)
+                self.sensors.append(device)
+        print(self.sensors)
+        # sensor = plantower.Plantower(port=self._settings.get(["sensor_port"]))
+        # sensor.mode_change(plantower.PMS_PASSIVE_MODE)
+        # self.sensors.append(sensor)
         self._logger.info("Sensors ready")
-        self._logger.info(self.sensors)
+        # self._logger.info(self.sensors)
 
     def sensors_read_thread(self, sensors):
         self._logger.info("Sensors Read Thread Started")

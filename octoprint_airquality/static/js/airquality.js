@@ -8,10 +8,28 @@ $(function() {
     function AirQualityViewModel(parameters) {
         var self = this;
 
+        // self.supportedDevices = {
+        //     "5003": "Plantower PMS5003",
+        //     "7003": "Plantower PMS7003",
+        //     "A003": "Plantower PMSA003"
+        // };
+
         self.supportedDevices = {
-            "5003": "Plantower PMS5003",
-            "7003": "Plantower PMS7003",
-            "A003": "Plantower PMSA003"
+            "PMS1003": "Plantower PMS1003 (aka G1)",
+            "PMS3003": "Plantower PMS3003 (aka G3)",
+            "PMS5003": "Plantower PMS5003 (aka G5)",
+            "PMS5003S": "Plantower PMS5003S",
+            "PMS5003ST": "Plantower PMS5003ST",
+            "PMS5003T": "Plantower PMS5003T",
+            "PMS7003": "Plantower PMS7003 (aka G7)",
+            "PMSA003": "Plantower PMSA003 (aka G10)",
+            "SDS011": "Nova SDS011",
+            "SDS018": "Nova SDS018",
+            "SDS021": "Nova SDS021",
+            "SDS198": "Nova SDS198",
+            "HPMA115S0": "Honeywell HPMA115S0",
+            "HPMA115C0": "Honeywell HPMA115C0",
+            "SPS30": "Senserion SPS30"
         };
 
         self.settings = parameters[0];
