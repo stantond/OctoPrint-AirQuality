@@ -14,9 +14,9 @@
             <td><span data-bind="text: name"></span></td>
             <td><span data-bind="text: $root.getPrettyModel(model())"></span></td>
             <td><span data-bind="text: $root.getLocationNamefromId(location_id())"></span></td>
-            <td style="text-align:center" data-bind="css: {'text-warning': portAvailable == false}">
+            <td style="text-align:center" data-bind="css: {'text-warning': portAvailable() === false}">
                 <span data-bind="text: port"></span>
-                <i class="fa fa-exclamation-triangle text-warning" title="{{ _('Port currently unavailable') }}" data-bind="ifnot: portAvailable"></i>
+                <i class="fa fa-exclamation-triangle text-warning" title="{{ _('Port currently unavailable') }}" data-bind="visible: portAvailable() === false"></i>
             </td>
             <td style="text-align:right">
                 <div class="btn-group">
@@ -116,14 +116,14 @@
                 <select data-bind="value: location_id, options: $root.locations, optionsText: 'name',  optionsValue: 'id', optionsCaption: 'Choose a location'"></select>
             </div>
         </div>
-        <div class="control-group" data-bind="css: {warning: $root.portUnavailable()}">
+        <div class="control-group" data-bind="css: {warning: $root.isPortAvailable() === false}">
             <label class="control-label">{{ _('Serial Port') }}</label>
             <div class="controls">
                 <div class="input-append">
                     <select data-bind="value: port, options: $root.serialPortsListEdit, optionsCaption: 'Choose a serial port'"></select>
                     <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
-                <span class="help-inline" data-bind="visible: $root.portUnavailable()">{{ _('Port currently not connected') }}</span>
+                <span class="help-inline" data-bind="visible: $root.isPortAvailable() === false">{{ _('Port currently not connected') }}</span>
             </div>
         </div>
     </div>

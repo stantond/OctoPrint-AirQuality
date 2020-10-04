@@ -44,12 +44,12 @@ $(function() {
         self.recentChanges = ko.observable(false);
 
         /* Used by the Edit template to show a warning when the selected port is unavailable */
-        self.portUnavailable = ko.computed(function() {
+        self.isPortAvailable = ko.computed(function() {
             if (self.selectedDevice() !== undefined) {
                 if (self.serialPortsList.indexOf(self.selectedDevice().port()) == -1 && self.selectedDevice().port() !== undefined) {
-                    return true;
-                } else {
                     return false;
+                } else {
+                    return true;
                 };
             };
         });
@@ -95,12 +95,27 @@ $(function() {
 
         /* First load of device and location settings from the database */
         self.onBeforeBinding = function() {
+            self.requestSerialPortsMessage();
             self.loadLocationsFromDatabase();
             self.loadDevicesFromDatabase();
         }
 
         self.onAfterBinding = function() {
             // TODO handle missing devices?
+        }
+
+        /* Silently ask the backend to check for available sensors when the settings screen is shown.
+        The actual dictionary of updated sensors comes back using the Plugin Message mechanism*/
+        self.requestSerialPortsMessage = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "refresh_sensors"
+                }),
+                contentType: "application/json; charset=UTF-8"
+            });
         }
 
         self.onDataUpdaterPluginMessage = function(pluginName, message) {
@@ -161,18 +176,8 @@ $(function() {
             })
         }
 
-        /* Silently ask the backend to check for available sensors when the settings screen is shown.
-        The actual dictionary of updated sensors comes back using the Plugin Message mechanism*/
         self.onSettingsShown = function() {
-            $.ajax({
-                url: API_BASEURL + "plugin/airquality",
-                type: "POST",
-                dataType: "json",
-                data: JSON.stringify({
-                    command: "refresh_sensors"
-                }),
-                contentType: "application/json; charset=UTF-8"
-            })
+            self.requestSerialPortsMessage();
         }
 
         /* Restarts the sensor reading thread, applying any device and location changes, and hides the Recent Changes message */
@@ -226,14 +231,14 @@ $(function() {
                             'model':ko.observable(device.model),
                             'name':ko.observable(device.name),
                             'port':ko.observable(device.port),
-                            'portAvailable':ko.computed(function() {
-                                if (self.serialPortsList.indexOf(device.port == -1 && device.port !== undefined)) {
-                                    return false;
-                                } else {
-                                    return true;
-                                };
-                            })
                         };
+                        device.portAvailable = ko.computed(function() {
+                            if (self.serialPortsList.indexOf(device.port()) == -1 && device.port() !== undefined) {
+                                return false;
+                            } else {
+                                return true;
+                            };
+                        })
                         self.devices.push(device);
                     });
                 },
