@@ -41,12 +41,12 @@ class DatabaseManager():
                     pm1         REAL,
                     pm2_5       REAL,
                     pm10        REAL,
-                    n0_3        INTEGER,
-                    n0_5        INTEGER,
-                    n1_0        INTEGER,
-                    n2_5        INTEGER,
-                    n5_0        INTEGER,
-                    n10_0       INTEGER,
+                    n0_3        REAL,
+                    n0_5        REAL,
+                    n1_0        REAL,
+                    n2_5        REAL,
+                    n5_0        REAL,
+                    n10_0       REAL,
                     FOREIGN KEY(device_id) REFERENCES devices(id),
                     FOREIGN KEY(location_id) REFERENCES locations(id)
                 )''')
@@ -91,6 +91,24 @@ class DatabaseManager():
             db.close()
         except Exception as e:
             self._logger.error("Error inserting location into database: %s" % e)
+
+    def insert_reading(self, device_id, location_id, reading):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO readings(
+                device_id, location_id, pm1, pm2_5, pm10, n0_3, n0_5, n1_0, n2_5, n5_0, n10_0
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [
+                    device_id, location_id,
+                    reading.pm01, reading.pm25, reading.pm10,
+                    reading.n0_3, reading.n0_5, reading.n1_0, reading.n2_5, reading.n5_0, reading.n10_0
+                ]
+            )
+            cursor.close()
+            db.commit()
+            db.close()
+        except Exception as e:
+            self._logger.error("Error inserting reading into database: %s" % e)
 
     def get_devices(self):
         try:
@@ -160,9 +178,6 @@ class DatabaseManager():
         except Exception as e:
             self._logger.error("Error deleting location from database: %s" % e)
 
-    def insert_reading(self):
-        pass
-
     def build_test_database(self):
         self.empty_database()
         self.create_database()
@@ -179,8 +194,8 @@ class DatabaseManager():
             self.insert_device({
                 "name": "External PM Sensor",
                 "location_id": "2",
-                "model": "PMS7003",
-                "port": "COM5"
+                "model": "PMSA003",
+                "port": "COM4"
             })
         except Exception as e:
             self._logger.error("Error building test database: %s" % e)

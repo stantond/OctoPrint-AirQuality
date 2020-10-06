@@ -22,13 +22,11 @@ class SensorsManager():
         self.serial_ports = []
         self.sensors = []
 
-        self.refresh_sensors()
-
         self.readThread = None
         self.readThreadStop = False
-        self._connected = False
         self.serialConn = None
-        # self.start_monitoring()
+
+        self.refresh_sensors()
 
     def refresh_sensors(self, new_port=None):
         # If being called directly or as a result of the printer port changing
@@ -36,13 +34,10 @@ class SensorsManager():
             self.find_serial_ports()
             self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
         self.initialise_sensors()
-
-    def start_monitoring(self):
-        # @TODO If > 0 active sensors then
-        self.startReadThread()
-        self._connected = True
+        self.start_sensors_read_thread()  
 
     def initialise_sensors(self):
+        self.stop_sensors_read_thread()
         self._logger.info("Initialising sensors...")
         self.sensors = []
         devices = self.database_manager.get_devices()
@@ -51,43 +46,36 @@ class SensorsManager():
                 device["reader"] = SensorReader(device["model"], device["port"], 0)
                 self.sensors.append(device)
         print(self.sensors)
-        # sensor = plantower.Plantower(port=self._settings.get(["sensor_port"]))
-        # sensor.mode_change(plantower.PMS_PASSIVE_MODE)
-        # self.sensors.append(sensor)
         self._logger.info("Sensors ready")
-        # self._logger.info(self.sensors)
 
-    def sensors_read_thread(self, sensors):
-        self._logger.info("Sensors Read Thread Started")
-        self._logger.info("Waking sensors")
-        for sensor in sensors:
-            sensor.set_to_wakeup()
-        self._logger.info("Sensors are awake")
-        self._logger.info("Starting Read Loop")
-        time.sleep(30)
+    def sensors_read_thread(self):
+        self._logger.info("Starting Sensor Read Loop")
         while self.readThreadStop is False:
-            for sensor in sensors:
+            for sensor in self.sensors:
                 try:
-                    result = sensor.read_in_passive()
-                    self._logger.info(result)
+                    with sensor["reader"] as reader:
+                        print("trying to read")
+                        # @todo handle octoprint stealing the serial port until it figures out it's wrong
+                        # @todo handle when reading.thing doesn't exist
+                        # @todo handle all the other possible readings
+                        self.database_manager.insert_reading(sensor["id"], sensor["location_id"], next(reader()))                    
                 except serial.SerialException:
-                    self._connected = False
                     self._logger.error("Error reading from sensor")
-                    self.stopReadThread()
-            time.sleep(30)
+                    self.stop_sensors_read_thread()
+            time.sleep(5)
         self._logger.info("Sensors Read Thread Stopped")
 
-    def startReadThread(self):
+    def start_sensors_read_thread(self):
         if self.readThread is None:
             self.readThreadStop = False
             self.readThread = threading.Thread(
                 target=self.sensors_read_thread,
-                args=(self.sensors,)
+                # args=(self.sensors,)
             )
             self.readThread.daemon = True
             self.readThread.start()
 
-    def stopReadThread(self):
+    def stop_sensors_read_thread(self):
         self.readThreadStop = True
         if self.readThread and threading.current_thread() != self.readThread:
             self.readThread.join()
@@ -140,6 +128,3 @@ class SensorsManager():
             self._logger.info("Available serial ports: " + keys_string)
 
         # @TODO: When the list is rebuilt, disable sensors that are no longer valid
-
-    def is_connected(self):
-        return self._connected
