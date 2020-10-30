@@ -27,16 +27,17 @@ class SensorsManager():
         self.serialConn = None
 
         self.refresh_sensors()
+        self.build_sensors_list()
+        self.start_sensors_read_thread()
 
     def refresh_sensors(self, new_port=None):
         # If being called directly or as a result of the printer port changing
         if new_port == None or new_port != self.printer_port:
-            self.find_serial_ports()
-            self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
-        self.initialise_sensors()
-        self.start_sensors_read_thread()  
+            self.update_serial_ports()
+        self.build_sensors_list()
+        self.start_sensors_read_thread()
 
-    def initialise_sensors(self):
+    def build_sensors_list(self):
         self.stop_sensors_read_thread()
         self._logger.info("Initialising sensors...")
         self.sensors = []
@@ -82,7 +83,7 @@ class SensorsManager():
         self.readThread = None
 
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
-    def find_serial_ports(self):
+    def update_serial_ports(self):    
         self.serial_port_details = {}
         self._logger.info("Building list of available serial devices...")
         self.serial_ports = list(list_ports.comports())
@@ -126,5 +127,6 @@ class SensorsManager():
                     keys_string += ", "
                 keys_string += key
             self._logger.info("Available serial ports: " + keys_string)
+            self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
 
         # @TODO: When the list is rebuilt, disable sensors that are no longer valid

@@ -67,7 +67,16 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ EventHandlerPlugin mixin
 
 	def on_event(self, event, payload):
-		if event == "Connected":
+		if event == "PrinterStateChanged":
+			self._logger.info("Printer state changed:")
+			self._logger.info(payload["state_id"])
+			self._logger.info("get_current_connection()[1]")
+			self._logger.info(self._printer.get_current_connection()[1])
+			# if(payload["state_id"] == "OFFLINE"): # or connected
+				# self.sensors_manager.refresh_sensors()
+				# @todo if no sensormanager, initialise the sensors for the first time.
+				# @todo if sensormanager, check if any sensors are using printer port, and do somthing (remove port and remove from monitoring)
+		elif event == "Connected":
 			try:
 				self.sensors_manager.refresh_sensors(payload["port"])
 			except AttributeError:
