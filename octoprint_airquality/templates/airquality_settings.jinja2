@@ -3,6 +3,12 @@
     <div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.recentChanges()">
         <span>{{ _('Your changes are saved but not in use. Click Save to restart the sensor monitor.') }}</span>
     </div>
+    <form class="form-inline">
+        <button href="#" class="btn" data-bind="click: $root.startSensorRead, disable: $root.sensorReadThreadRunning() === true"><i class="fa fa-play" aria-hidden="true"></i></button>
+        <button href="#" class="btn" data-bind="click: $root.stopSensorRead, disable: $root.sensorReadThreadRunning() === false"><i class="fa fa-stop" aria-hidden="true"></i></button>
+        <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === true">{{ _('Sensors are being read.') }}</span>
+        <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === false">{{ _('Sensors are not being read.') }}</span>
+    </form>
     <ul class="nav nav-tabs">
         <li class="active"><a href="#settings_airquality_devices" data-toggle="tab">Devices</a></li>
         <li><a href="#settings_airquality_locations" data-toggle="tab">Locations</a></li>

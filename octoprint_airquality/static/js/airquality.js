@@ -42,6 +42,7 @@ $(function() {
         self.selectedDevice = ko.observable();
         self.selectedLocation = ko.observable();
         self.recentChanges = ko.observable(false);
+        self.sensorReadThreadRunning = ko.observable(false);
 
         /* Used by the Edit template to show a warning when the selected port is unavailable */
         self.isPortAvailable = ko.computed(function() {
@@ -128,6 +129,11 @@ $(function() {
                 self.serialPorts = message.serial_ports;
                 self.serialPortsList(Object.keys(self.serialPorts));
             }
+            if (message.sensors_read_thread_active_status) {
+                // Update the status of the Sensor Read Thread
+                self.sensorReadThreadRunning(JSON.parse(message.sensors_read_thread_active_status));
+                console.log(self.sensorReadThreadRunning());
+            }
         }
 
         self.hideAlert = function() {
@@ -170,7 +176,87 @@ $(function() {
                         self.showAlert(true);
                         setTimeout(function() {
                             button.disabled=false;
-                        }, 5000);
+                        }, 3000);
+                    }
+                }
+            })
+        }
+
+        /* User can manually start the Sensor Read Thread. */
+        self.startSensorRead = function(button=null) {
+            var alert = undefined;
+            button.disabled=true;
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "start_sensor_read"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    if(button!==null) {
+                        alertText = gettext(response["message"]);
+                        self.alertType("alert-success");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            self.showAlert(false);
+                        }, 3000);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 3000);
+                    }
+                },
+                error: function(response, errorThrown) {
+                    if(button!==null) {
+                        alert = gettext(response["message"] + ": " + errorThrown);
+                        self.alertType("alert-error");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 3000);
+                    }
+                }
+            })
+        }
+
+        /* User can manually stop the Sensor Read Thread. */
+        self.stopSensorRead = function(button=null) {
+            var alert = undefined;
+            button.disabled=true;
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "stop_sensor_read"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    if(button!==null) {
+                        alertText = gettext(response["message"]);
+                        self.alertType("alert-success");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            self.showAlert(false);
+                        }, 3000);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 3000);
+                    }
+                },
+                error: function(response, errorThrown) {
+                    if(button!==null) {
+                        alert = gettext(response["message"] + ": " + errorThrown);
+                        self.alertType("alert-error");
+                        self.alertMessage(alertText);
+                        self.showAlert(true);
+                        setTimeout(function() {
+                            button.disabled=false;
+                        }, 3000);
                     }
                 }
             })

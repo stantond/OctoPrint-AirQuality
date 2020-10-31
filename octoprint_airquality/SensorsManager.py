@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import glob
+import json
 import threading
 import serial
 from serial.tools import list_ports
@@ -23,7 +24,7 @@ class SensorsManager():
         self.sensors = []
 
         self.readThread = None
-        self.readThreadStop = False
+        self.readThreadActive = False
         self.serialConn = None
 
         self.refresh_sensors()
@@ -51,7 +52,7 @@ class SensorsManager():
 
     def sensors_read_thread(self):
         self._logger.info("Starting Sensor Read Loop")
-        while self.readThreadStop is False:
+        while self.readThreadActive is True:
             for sensor in self.sensors:
                 try:
                     with sensor["reader"] as reader:
@@ -59,7 +60,7 @@ class SensorsManager():
                         # @todo handle octoprint stealing the serial port until it figures out it's wrong
                         # @todo handle when reading.thing doesn't exist
                         # @todo handle all the other possible readings
-                        self.database_manager.insert_reading(sensor["id"], sensor["location_id"], next(reader()))                    
+                        self.database_manager.insert_reading(sensor["id"], sensor["location_id"], next(reader()))
                 except serial.SerialException:
                     self._logger.error("Error reading from sensor")
                     self.stop_sensors_read_thread()
@@ -68,7 +69,7 @@ class SensorsManager():
 
     def start_sensors_read_thread(self):
         if self.readThread is None:
-            self.readThreadStop = False
+            self.set_sensors_read_thread_active_status(True)
             self.readThread = threading.Thread(
                 target=self.sensors_read_thread,
                 # args=(self.sensors,)
@@ -77,13 +78,18 @@ class SensorsManager():
             self.readThread.start()
 
     def stop_sensors_read_thread(self):
-        self.readThreadStop = True
+        self.set_sensors_read_thread_active_status(False)
         if self.readThread and threading.current_thread() != self.readThread:
             self.readThread.join()
         self.readThread = None
 
+    def set_sensors_read_thread_active_status(self, status):
+        self.readThreadActive = status
+        self._logger.info("Sensor Read Thread status set to " + str(self.readThreadActive))
+        self._plugin_manager.send_plugin_message(self._identifier, dict(sensors_read_thread_active_status=str(self.readThreadActive).lower()))
+
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
-    def update_serial_ports(self):    
+    def update_serial_ports(self):
         self.serial_port_details = {}
         self._logger.info("Building list of available serial devices...")
         self.serial_ports = list(list_ports.comports())
