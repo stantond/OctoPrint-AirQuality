@@ -117,7 +117,7 @@ $(function() {
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({
-                    command: "refresh_sensors"
+                    command: "refresh_available_serial_ports"
                 }),
                 contentType: "application/json; charset=UTF-8"
             });
@@ -136,7 +136,6 @@ $(function() {
             if (message.sensors_read_thread_active_status) {
                 // Update the status of the Sensor Read Thread
                 self.sensorReadThreadRunning(JSON.parse(message.sensors_read_thread_active_status));
-                console.log(self.sensorReadThreadRunning());
             }
         }
 
@@ -148,10 +147,10 @@ $(function() {
             self.alertControlsShow(false);
         }
 
-        /* User can manually the backend to check for available sensors. The actual
-        dictionary of updated sensors comes back using the Plugin Message mechanism.
+        /* User can manually the backend to check for available serial ports. The actual
+        dictionary of updated serial ports comes back using the Plugin Message mechanism.
         Disables the button until the flash message has cleared. */
-        self.refreshSensors = function(button=null) {
+        self.refreshAvailableSerialPorts = function(button=null) {
             var alert = undefined;
             button.disabled=true;
             $.ajax({
@@ -159,7 +158,7 @@ $(function() {
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({
-                    command: "refresh_sensors"
+                    command: "refresh_available_serial_ports"
                 }),
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {

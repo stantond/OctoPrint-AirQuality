@@ -77,7 +77,7 @@
             <div class="controls">
                 <div class="input-append">
                     <select data-bind="value: port, valueAllowUnset: true, options: $root.serialPortsList, optionsCaption: 'Choose a serial port'"></select>
-                    <button id="AirQualityDeviceAddModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceAddModalRefreshButton); }">{{ _('Refresh') }}</button>
+                    <button id="AirQualityDeviceAddModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshAvailableSerialPorts(AirQualityDeviceAddModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
             </div>
         </div>
@@ -121,7 +121,7 @@
             <div class="controls">
                 <div class="input-append">
                     <select data-bind="value: port, options: $root.serialPortsListEdit, optionsCaption: 'Choose a serial port'"></select>
-                    <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshSensors(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
+                    <button id="AirQualityDeviceEditModalRefreshButton" class="btn btn-default" data-bind="click: function() { $root.refreshAvailableSerialPorts(AirQualityDeviceEditModalRefreshButton); }">{{ _('Refresh') }}</button>
                 </div>
                 <span class="help-inline" data-bind="visible: $root.isPortAvailable() === false">{{ _('Port currently not connected') }}</span>
             </div>

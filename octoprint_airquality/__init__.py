@@ -67,18 +67,11 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ EventHandlerPlugin mixin
 
 	def on_event(self, event, payload):
-		if event == "PrinterStateChanged":
-			self._logger.info("Printer state changed:")
-			self._logger.info(payload["state_id"])
-			self._logger.info("get_current_connection()[1]")
-			self._logger.info(self._printer.get_current_connection()[1])
-			# if(payload["state_id"] == "OFFLINE"): # or connected
-				# self.sensors_manager.refresh_sensors()
-				# @todo if no sensormanager, initialise the sensors for the first time.
-				# @todo if sensormanager, check if any sensors are using printer port, and do somthing (remove port and remove from monitoring)
-		elif event == "Connected":
+		if event == "Connected":
+			"""Refresh sensors when the printer port changes to ensure there is no conflict."""
 			try:
-				self.sensors_manager.refresh_sensors(payload["port"])
+				if payload["port"] != self.sensors_manager.printer_port:
+					self.sensors_manager.refresh_available_serial_ports()
 			except AttributeError:
 				# As this event also fires for a connection during start-up,
 				# `sensor_manager` may not exist yet, so we can safely catch
@@ -97,7 +90,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 			get_locations=[],
 			update_location=[],
 			delete_location=[],
-			refresh_sensors=[],
+			refresh_available_serial_ports=[],
 			start_sensor_read=[],
 			stop_sensor_read=[]
 		)
@@ -160,12 +153,12 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				return response
 			except:
 				return flask.make_response('{"message": "Failed to delete device"}', 500)
-		elif command == "refresh_sensors":
+		elif command == "refresh_available_serial_ports":
 			try:
-				self.sensors_manager.refresh_sensors()
-				return flask.make_response('{"message": "Sensors refreshed"}', 200)
+				self.sensors_manager.refresh_available_serial_ports()
+				return flask.make_response('{"message": "Serial port availability refreshed"}', 200)
 			except:
-				return flask.make_response('{"message": "Failed to refresh sensors"}', 500)
+				return flask.make_response('{"message": "Failed to refresh serial port availability"}', 500)
 		elif command == "start_sensor_read":
 			try:
 				if self.sensors_manager.readThreadActive == False:
