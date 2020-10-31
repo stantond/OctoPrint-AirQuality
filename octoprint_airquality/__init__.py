@@ -40,9 +40,6 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			sensor_port="/dev/ttyUSB0",
-			sensor_baud_rate="9600",
-			arrDevices = []
 		)
 
 	##~~ TemplatePlugin mixin
