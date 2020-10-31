@@ -83,6 +83,10 @@ $(function() {
         self.alertType = ko.observable("alert-warning");
         self.showAlert = ko.observable(false);
 
+        self.alertControlsMessage = ko.observable("");
+        self.alertControlsType = ko.observable("alert-warning");
+        self.alertControlsShow = ko.observable(false);
+
         self.getPrettyModel = function(model) {
             return self.supportedDevices[model];
         }
@@ -138,6 +142,10 @@ $(function() {
 
         self.hideAlert = function() {
             self.showAlert(false);
+        }
+
+        self.alertControlsHide = function() {
+            self.alertControlsShow(false);
         }
 
         /* User can manually the backend to check for available sensors. The actual
@@ -197,26 +205,20 @@ $(function() {
                 success: function(response) {
                     if(button!==null) {
                         alertText = gettext(response["message"]);
-                        self.alertType("alert-success");
-                        self.alertMessage(alertText);
-                        self.showAlert(true);
+                        self.alertControlsType("alert-success");
+                        self.alertControlsMessage(alertText);
+                        self.alertControlsShow(true);
                         setTimeout(function() {
-                            self.showAlert(false);
-                        }, 3000);
-                        setTimeout(function() {
-                            button.disabled=false;
+                            self.alertControlsShow(false);
                         }, 3000);
                     }
                 },
                 error: function(response, errorThrown) {
                     if(button!==null) {
                         alert = gettext(response["message"] + ": " + errorThrown);
-                        self.alertType("alert-error");
-                        self.alertMessage(alertText);
-                        self.showAlert(true);
-                        setTimeout(function() {
-                            button.disabled=false;
-                        }, 3000);
+                        self.alertControlsType("alert-error");
+                        self.alertControlsMessage(alertText);
+                        self.alertControlsShow(true);
                     }
                 }
             })
@@ -237,26 +239,20 @@ $(function() {
                 success: function(response) {
                     if(button!==null) {
                         alertText = gettext(response["message"]);
-                        self.alertType("alert-success");
-                        self.alertMessage(alertText);
-                        self.showAlert(true);
+                        self.alertControlsType("alert-success");
+                        self.alertControlsMessage(alertText);
+                        self.alertControlsShow(true);
                         setTimeout(function() {
-                            self.showAlert(false);
-                        }, 3000);
-                        setTimeout(function() {
-                            button.disabled=false;
+                            self.alertControlsShow(false);
                         }, 3000);
                     }
                 },
                 error: function(response, errorThrown) {
                     if(button!==null) {
                         alert = gettext(response["message"] + ": " + errorThrown);
-                        self.alertType("alert-error");
-                        self.alertMessage(alertText);
-                        self.showAlert(true);
-                        setTimeout(function() {
-                            button.disabled=false;
-                        }, 3000);
+                        self.alertControlsType("alert-error");
+                        self.alertControlsMessage(alertText);
+                        self.alertControlsShow(true);
                     }
                 }
             })
