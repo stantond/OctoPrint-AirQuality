@@ -8,12 +8,6 @@ $(function() {
     function AirQualityViewModel(parameters) {
         var self = this;
 
-        // self.supportedDevices = {
-        //     "5003": "Plantower PMS5003",
-        //     "7003": "Plantower PMS7003",
-        //     "A003": "Plantower PMSA003"
-        // };
-
         self.supportedDevices = {
             "PMS1003": "Plantower PMS1003 (aka G1)",
             "PMS3003": "Plantower PMS3003 (aka G3)",
@@ -261,10 +255,14 @@ $(function() {
             self.requestSerialPortsMessage();
         }
 
+        self.onSettingsHidden = function() {
+            // @TODO restart the sensor thread if there are changes to be applied
+        }
+
         /* Restarts the sensor reading thread, applying any device and location changes, and hides the Recent Changes message */
         self.onSettingsBeforeSave = function(payload) {
-            self.recentChanges(false);
-            // @TODO restart the sensor thread to apply the new changes
+            self.recentChanges(false); // @TODO move this to the backend so it's not lost if the user closes the page
+            // @TODO restart the sensor thread if there are changes to be applied
         }
 
         /* Get locations from the database and iteratively push each location into the local locations array with observable attributes*/

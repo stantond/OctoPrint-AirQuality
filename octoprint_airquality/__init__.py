@@ -108,7 +108,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 		elif command == "update_device":
 			try:
 				self.database_manager.update_device(data["device"])
-				self.sensor_manager.update_devices_additional_attributes()
+				# @TODO inform the user that they must restart the sensor thread to apply their changes
 				return flask.make_response('{"message": "Device updated"}', 200)
 			except:
 				return flask.make_response('{"message": "Failed to update device"}', 500)

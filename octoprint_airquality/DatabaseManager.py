@@ -198,6 +198,7 @@ class DatabaseManager():
             self._logger.error("Error deleting location from database: %s" % e)
 
     def build_test_database(self):
+        # @TODO Add a debug mode and create debug database for this mode
         self.empty_database()
         self.create_database()
         try:
