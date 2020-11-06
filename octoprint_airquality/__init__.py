@@ -12,6 +12,7 @@ from __future__ import absolute_import
 import flask
 import json
 import octoprint.plugin
+import time
 from octoprint.server import user_permission
 from . import DatabaseManager, SensorsManager
 
@@ -22,24 +23,18 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 					   octoprint.plugin.EventHandlerPlugin,
 					   octoprint.plugin.SimpleApiPlugin):
 
-	# supportedSensors = {
-	# 	"Plantower PMS5003": "5003",
-	# 	"Plantower PMS7003": "7003",
-	# 	"Plantower PMSA003": "A003"
-	# }
-
 	def on_after_startup(self):
 		self.database_manager = DatabaseManager.DatabaseManager(self)
 		self.sensors_manager = SensorsManager.SensorsManager(self, self.database_manager)
-	# 	if self.sensors_manager.is_connected():
-	# 		self._logger.info("Sensors are alive!")
-	# 	else:
-	# 		self._logger.error("Could not find the sensors.")
+		if self._settings.get(["start_reading_on_startup"]) == True:
+			time.sleep(10)
+			self.sensors_manager.start_sensors_read_thread()
 
 	##~~ SettingsPlugin mixin
 
 	def get_settings_defaults(self):
 		return dict(
+			start_reading_on_startup=True,
 		)
 
 	##~~ TemplatePlugin mixin

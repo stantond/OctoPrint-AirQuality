@@ -3,9 +3,18 @@
     <span data-bind="text: $root.alertControlsMessage"></span>
     <button type="button" class="close" data-bind="click: $root.alertControlsHide()">&times;</button>
 </div>
-<form class="form-inline">
-    <button href="#" class="btn" data-bind="click: $root.startSensorRead, disable: $root.sensorReadThreadRunning() === true"><i class="fa fa-play" aria-hidden="true"></i></button>
-    <button href="#" class="btn" data-bind="click: $root.stopSensorRead, disable: $root.sensorReadThreadRunning() === false"><i class="fa fa-stop" aria-hidden="true"></i></button>
-    <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === true">{{ _('Sensors are being read.') }}</span>
-    <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === false">{{ _('Sensors are not being read.') }}</span>
-</form>
+<div class="row-fluid">
+    <form class="form-inline">
+        <button href="#" class="btn" data-bind="click: $root.startSensorRead, disable: $root.sensorReadThreadRunning() === true"><i class="fa fa-play" aria-hidden="true"></i></button>
+        <button href="#" class="btn" data-bind="click: $root.stopSensorRead, disable: $root.sensorReadThreadRunning() === false"><i class="fa fa-stop" aria-hidden="true"></i></button>
+        <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === true">{{ _('Sensors are being read.') }}</span>
+        <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === false">{{ _('Sensors are not being read.') }}</span>
+    </form>
+</div>
+<div class="control-group" style="display: table;">
+    <div class="controls" data-toggle="tooltip" data-bind="tooltip: {}" title="{{ _('When enabled, the plugin will begin reading the sensors shortly after OctoPrint starts up.') }}">
+        <label class="checkbox">
+            <input type="checkbox" data-bind="checked: settings.settings.plugins.airquality.start_reading_on_startup">{{ _('Begin monitoring on startup.') }}</input>
+        </label>
+    </div>
+</div>

@@ -34,7 +34,6 @@ class SensorsManager():
         # Start-Up Functions
         self.update_serial_ports()
         self.initialise_sensors()
-        # self.start_sensors_read_thread() # @TODO work out when to start the thread for the first time after startup
 
     def initialise_sensors(self):
         """Load stored device details from the database into a dictionary and make them usable"""
