@@ -8,6 +8,7 @@
 		}
 	],
 	"settings": {
-		"python.venvPath": "../OctoPrint/octoenv"
+		"python.venvPath": "c:\\dev\\venvs",
+		"python.pythonPath": "c:\\dev\\venvs\\octoenv\\Scripts\\python.exe"
 	}
 }

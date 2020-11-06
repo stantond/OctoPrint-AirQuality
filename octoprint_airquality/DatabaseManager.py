@@ -32,21 +32,38 @@ class DatabaseManager():
                     port        TEXT DEFAULT NULL,
                     FOREIGN KEY(location_id) REFERENCES locations(id)
                 )''')
+            # Fields from https://github.com/avaldebe/PyPMS/blob/master/docs/library_usage.md
             cursor.execute(
                 '''CREATE TABLE IF NOT EXISTS readings(
-                    id          INTEGER PRIMARY KEY,
+                    id                  INTEGER PRIMARY KEY,
                     device_id,
                     location_id,
-                    timestamp   DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    pm1         REAL,
-                    pm2_5       REAL,
-                    pm10        REAL,
-                    n0_3        REAL,
-                    n0_5        REAL,
-                    n1_0        REAL,
-                    n2_5        REAL,
-                    n5_0        REAL,
-                    n10_0       REAL,
+                    inserted_timestamp  DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    read_timestamp      REAL,
+                    raw1                REAL,
+                    raw2_5              REAL,
+                    raw10               REAL,
+                    pm1                 REAL,
+                    pm2_5               REAL,
+                    pm4                 REAL,
+                    pm10                REAL,
+                    pm100               REAL,
+                    n0_3                REAL,
+                    n0_5                REAL,
+                    n1_0                REAL,
+                    n2_5                REAL,
+                    n4_0                REAL,
+                    n5_0                REAL,
+                    n10_0               REAL,
+                    HCHO                REAL,
+                    temp                REAL,
+                    rhum                REAL,
+                    pres                REAL,
+                    diam                REAL,
+                    IAQ_acc             REAL,
+                    IAQ                 REAL,
+                    gas                 REAL,
+                    alt                 REAL,
                     FOREIGN KEY(device_id) REFERENCES devices(id),
                     FOREIGN KEY(location_id) REFERENCES locations(id)
                 )''')
@@ -97,11 +114,13 @@ class DatabaseManager():
             db = sqlite3.connect(self.db_path)
             cursor = db.cursor()
             cursor.execute('''INSERT INTO readings(
-                device_id, location_id, pm1, pm2_5, pm10, n0_3, n0_5, n1_0, n2_5, n5_0, n10_0
-                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [
+                device_id, location_id, raw1, raw2_5, raw10, pm1, pm2_5, pm4, pm10, pm100, n0_3, n0_5, n1_0, n2_5, n4_0, n5_0, n10_0, HCHO, temp, rhum, pres, diam, IAQ_acc, IAQ, gas, alt
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [
                     device_id, location_id,
-                    reading.pm01, reading.pm25, reading.pm10,
-                    reading.n0_3, reading.n0_5, reading.n1_0, reading.n2_5, reading.n5_0, reading.n10_0
+                    reading.get("raw01"), reading.get("raw25"), reading.get("raw10"),
+                    reading.get("pm01"), reading.get("pm25"), reading.get("pm04"), reading.get("pm10"), reading.get("pm100"),
+                    reading.get("n0_3"), reading.get("n0_5"), reading.get("n1_0"), reading.get("n2_5"), reading.get("n4_0"), reading.get("n5_0"), reading.get("n10_0"),
+                    reading.get("HCHO"), reading.get("temp"), reading.get("rhum"), reading.get("pres"), reading.get("diam"), reading.get("IAQ_acc"), reading.get("IAQ"), reading.get("gas"), reading.get("alt")
                 ]
             )
             cursor.close()

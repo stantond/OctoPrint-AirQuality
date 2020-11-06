@@ -8,6 +8,7 @@ import serial
 from serial.tools import list_ports
 import plantower, time
 from pms.sensor import SensorReader
+from dataclasses import asdict
 
 class SensorsManager():
     def __init__(self, plugin, database_manager):
@@ -26,8 +27,9 @@ class SensorsManager():
         self.serial_port_details = {}
 
         # Read Thread Variables
-        self.readThread = None
-        self.readThreadActive = False
+        self.read_thread = None
+        self.read_thread_active = False
+        self.sensor_loop_timer = 5
 
         # Start-Up Functions
         self.update_serial_ports()
@@ -58,10 +60,11 @@ class SensorsManager():
         """
         Checks if the `port` matches an available serial port and updates the `is_available` attribute.
         """
-        device["is_available"] = False
+        is_available = False
         if device["port"] != None:
             if device["port"] in self.serial_port_details.keys():
-                device["is_available"] = True
+                is_available = True
+        device["is_available"] = is_available
 
     def refresh_available_serial_ports(self):
         """
@@ -78,49 +81,49 @@ class SensorsManager():
     def sensors_read_thread(self):
         """Read the sensors and store the results until told to stop."""
         self._logger.info("Starting Sensor Read Loop")
-        while self.readThreadActive is True:
-            self._logger.info("Start of Read loop")
-            for device in self.devices:
-                # @TODO Stop the thread with an error if there are no more devices where `is_available` = True
-                try:
-                    # @TODO Make sure the device is `is_available` before trying to read it
-                    with device["reader"] as reader:
-                        print("trying to read")
-                        # @todo handle octoprint stealing the serial port until it figures out it's wrong
-                        # @todo handle when reading.thing doesn't exist
-                        # @todo handle all the other possible readings
-                        self.database_manager.insert_reading(device["id"], device["location_id"], next(reader()))
-                except serial.SerialException:
-                    self._logger.error("Error reading from sensor")
-                    self.stop_sensors_read_thread()
-                    # @TODO safely remove the sensor by updating it's availability
-            time.sleep(5)
+        while self.read_thread_active is True:
+            self._logger.info("Checking device availability...")
+            devices_available_count = sum(1 for d in self.devices if d["is_available"] == True)
+            if devices_available_count > 0: # If at least one device is active, run this iteration of the loop
+                self._logger.info(str(devices_available_count) + " devices available. Attempting to read devices now...")
+                for device in self.devices:
+                    if device["is_available"] == True:
+                        try:
+                            with device["reader"] as reader:
+                                reading = asdict(next(reader()))
+                                self._logger.info("Reading for " + device["name"] + " is: " + json.dumps(reading))
+                                self.database_manager.insert_reading(device["id"], device["location_id"], reading)
+                        except serial.SerialException:
+                            self._logger.error("Error reading from sensor. Updating availability.")
+                            self.update_device_availability(device)
+            else:
+                self._logger.info("No devices available. Will try again in " + str(self.sensor_loop_timer) + " seconds.")
+            time.sleep(self.sensor_loop_timer)
         self._logger.info("Sensors Read Thread Stopped")
 
     def start_sensors_read_thread(self):
         """Start the sensor read thread."""
-        if self.readThread is None:
-            # @TODO fail if there are no sensors to be read
+        if self.read_thread is None:
             self.set_sensors_read_thread_active_status(True)
-            self.readThread = threading.Thread(
+            self.read_thread = threading.Thread(
                 target=self.sensors_read_thread,
                 # args=(self.sensors,)
             )
-            self.readThread.daemon = True
-            self.readThread.start()
+            self.read_thread.daemon = True
+            self.read_thread.start()
 
     def stop_sensors_read_thread(self):
         """Stop the sensor read thread."""
         self.set_sensors_read_thread_active_status(False)
-        if self.readThread and threading.current_thread() != self.readThread:
-            self.readThread.join()
-        self.readThread = None
+        if self.read_thread and threading.current_thread() != self.read_thread:
+            self.read_thread.join()
+        self.read_thread = None
 
     def set_sensors_read_thread_active_status(self, status):
         """Set the Active status of the Read Thread to True or False, and message the frontend to update the UI."""
-        self.readThreadActive = status
-        self._logger.info("Sensor Read Thread status set to " + str(self.readThreadActive))
-        self._plugin_manager.send_plugin_message(self._identifier, dict(sensors_read_thread_active_status=str(self.readThreadActive).lower()))
+        self.read_thread_active = status
+        self._logger.info("Sensor Read Thread status set to " + str(self.read_thread_active))
+        self._plugin_manager.send_plugin_message(self._identifier, dict(sensors_read_thread_active_status=str(self.read_thread_active).lower()))
 
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
     def update_serial_ports(self):
@@ -154,8 +157,7 @@ class SensorsManager():
                     "product": i.product,
                     "interface": i.interface
                 }
-            # serial_ports_string = dictionary_keys_to_string(self.serial_port_details)
-            self._logger.info("Available serial ports: " + dictionary_keys_to_string(self.serial_port_details))
+            self._logger.info("Available serial ports: " + self.dictionary_keys_to_string(self.serial_port_details))
             self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
         # @TODO compare last and new dicts, return True if changed, False if no change. Only required if thread needs to be restarted as a result
         # as this is undesirable. If thread doesn't need to be stopped to update availability, no real point in doing this check here.
