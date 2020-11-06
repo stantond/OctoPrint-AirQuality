@@ -84,7 +84,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 			delete_location=[],
 			refresh_available_serial_ports=[],
 			start_sensor_read=[],
-			stop_sensor_read=[]
+			stop_sensor_read=[],
 		)
 
 	def on_api_command(self, command, data):
@@ -108,6 +108,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 		elif command == "update_device":
 			try:
 				self.database_manager.update_device(data["device"])
+				self.sensor_manager.update_devices_additional_attributes()
 				return flask.make_response('{"message": "Device updated"}', 200)
 			except:
 				return flask.make_response('{"message": "Failed to update device"}', 500)
@@ -153,7 +154,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				return flask.make_response('{"message": "Failed to refresh serial port availability"}', 500)
 		elif command == "start_sensor_read":
 			try:
-				if self.sensors_manager.readThreadActive == False:
+				if self.sensors_manager.read_thread_active == False:
 					self.sensors_manager.set_sensors_read_thread_active_status(True)
 					return flask.make_response('{"message": "Sensors Read Thread started"}', 200)
 				else:
@@ -162,7 +163,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				return flask.make_response('{"message": "Failed to start the Sensors Read Thread"}', 500)
 		elif command == "stop_sensor_read":
 			try:
-				if self.sensors_manager.readThreadActive == True:
+				if self.sensors_manager.read_thread_active == True:
 					self.sensors_manager.set_sensors_read_thread_active_status(False)
 					return flask.make_response('{"message": "Sensors Read Thread stopped"}', 200)
 				else:
