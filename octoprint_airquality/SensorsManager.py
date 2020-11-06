@@ -72,11 +72,9 @@ class SensorsManager():
         """
         serial_port_devices_changed = self.update_serial_ports()
         if serial_port_devices_changed == True:
-            self.stop_sensors_read_thread() # @TODO Does the thread really need to be stopped and restarted, or can availability check go inside the thread?
             for device in self.devices:
                 self.update_device_availability(device)
             pass
-        self.start_sensors_read_thread() # @TODO Does the thread really need to be stopped and restarted, or can availability check go inside the thread?
 
     def sensors_read_thread(self):
         """Read the sensors and store the results until told to stop."""
