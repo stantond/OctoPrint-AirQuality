@@ -70,11 +70,9 @@ class SensorsManager():
         """
         Update the list of available serial ports and update device availability if changed
         """
-        serial_port_devices_changed = self.update_serial_ports()
-        if serial_port_devices_changed == True:
-            for device in self.devices:
-                self.update_device_availability(device)
-            pass
+        self.update_serial_ports()
+        for device in self.devices:
+            self.update_device_availability(device)
 
     def sensors_read_thread(self):
         """Read the sensors and store the results until told to stop."""
@@ -157,9 +155,6 @@ class SensorsManager():
                 }
             self._logger.info("Available serial ports: " + self.dictionary_keys_to_string(self.serial_port_details))
             self._plugin_manager.send_plugin_message(self._identifier, dict(serial_ports=self.serial_port_details))
-        # @TODO compare last and new dicts, return True if changed, False if no change. Only required if thread needs to be restarted as a result
-        # as this is undesirable. If thread doesn't need to be stopped to update availability, no real point in doing this check here.
-        return True
 
     def identify_printer_port(self):
         """Identify the current printer serial port and log the current situation."""
