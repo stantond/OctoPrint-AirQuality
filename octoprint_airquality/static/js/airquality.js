@@ -35,7 +35,6 @@ $(function() {
         self.serialPortsList = ko.observableArray();
         self.selectedDevice = ko.observable();
         self.selectedLocation = ko.observable();
-        self.recentChanges = ko.observable(false);
         self.sensorReadThreadRunning = ko.observable(false);
 
         /* Used by the Edit template to show a warning when the selected port is unavailable */
@@ -97,10 +96,6 @@ $(function() {
             self.requestSerialPortsMessage();
             self.loadLocationsFromDatabase();
             self.loadDevicesFromDatabase();
-        }
-
-        self.onAfterBinding = function() {
-            // TODO handle missing devices?
         }
 
         /* Silently ask the backend to check for available sensors when the settings screen is shown.
@@ -255,16 +250,6 @@ $(function() {
             self.requestSerialPortsMessage();
         }
 
-        self.onSettingsHidden = function() {
-            // @TODO restart the sensor thread if there are changes to be applied
-        }
-
-        /* Restarts the sensor reading thread, applying any device and location changes, and hides the Recent Changes message */
-        self.onSettingsBeforeSave = function(payload) {
-            self.recentChanges(false); // @TODO move this to the backend so it's not lost if the user closes the page
-            // @TODO restart the sensor thread if there are changes to be applied
-        }
-
         /* Get locations from the database and iteratively push each location into the local locations array with observable attributes*/
         self.loadLocationsFromDatabase = function() {
             $.ajax({
@@ -359,7 +344,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityDeviceCreateModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadDevicesFromDatabase();
                 },
                 error: function(response, errorThrown) {
@@ -381,7 +365,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityLocationCreateModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadLocationsFromDatabase();
                 },
                 error: function(response, errorThrown) {
@@ -428,7 +411,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityDeviceEditModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadDevicesFromDatabase();
                 },
                 error: function(response, errorThrown) {
@@ -450,7 +432,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityLocationEditModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadLocationsFromDatabase();
                 },
                 error: function(response, errorThrown) {
@@ -486,7 +467,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityDeviceDeleteModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadDevicesFromDatabase();
                 },
                 error: function(response, errorThrown) {
@@ -510,7 +490,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8",
                 success: function(response) {
                     $("#AirQualityLocationDeleteModal").modal("hide");
-                    self.recentChanges(true);
                     self.loadLocationsFromDatabase();
                 },
                 error: function(response, errorThrown) {

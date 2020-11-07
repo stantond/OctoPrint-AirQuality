@@ -129,7 +129,21 @@ class DatabaseManager():
         except Exception as e:
             self._logger.error("Error inserting reading into database: %s" % e)
 
+    def get_device(self, device_id):
+        """Returns a dictionary of the single device with the given ID."""
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+            cursor.execute('''SELECT id, name, created, modified, location_id, model, port FROM devices WHERE id=:device_id''', {"device_id": device_id})
+            devices = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+            cursor.close()
+            db.close()
+            return devices[0]
+        except Exception as e:
+            self._logger.error("Error getting device from database: %s" % e)
+
     def get_devices(self):
+        """Returns a list of all records in the devices table, as dictionaries."""
         try:
             db = sqlite3.connect(self.db_path)
             cursor = db.cursor()

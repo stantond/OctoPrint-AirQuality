@@ -36,15 +36,23 @@ class SensorsManager():
         self.initialise_sensors()
 
     def initialise_sensors(self):
-        """Load stored device details from the database into a dictionary and make them usable"""
+        """Load stored device details from the database into a dictionary and make them usable."""
         self.devices = self.database_manager.get_devices()
-        self.update_devices_additional_attributes()
-
-    def update_devices_additional_attributes(self):  # @TODO this also needs to be run when sensors are added/port settings are changed
-        """Add or update the required Python attributes (not stored in the database) for each device in the dictionary."""
         for device in self.devices:
-            self.update_device_reader(device)
-            self.update_device_availability(device)
+            self.update_device_additional_attributes(device)
+
+    def reload_sensor(self, device_id):
+        """Update a single device in self.devices to match any changes in the database to avoid reloading all devices and causing issues with the read thread."""
+        updated_device = self.database_manager.get_device(device_id)
+        for i,d in enumerate(self.devices):
+            if d["id"] == device_id:
+                self.devices[i] = updated_device
+                self.update_device_additional_attributes(self.devices[i])
+
+    def update_device_additional_attributes(self, device):
+        """Add or update the required Python attributes (not stored in the database) for the given device."""
+        self.update_device_reader(device)
+        self.update_device_availability(device)
 
     def update_device_reader(self, device):
         """

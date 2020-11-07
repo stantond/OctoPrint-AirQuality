@@ -1,8 +1,5 @@
 <form class="form-horizontal">
     <h3>{{ _('Air Quality Plugin Settings') }}</h3>
-    <div class="alert alert-warning" style="text-align: center;" data-bind="visible: $root.recentChanges()">
-        <span>{{ _('Your changes are saved but not in use. Click Save to restart the sensor monitor.') }}</span>
-    </div>
     {% include 'airquality_settings_controls.jinja2' %}
     <ul class="nav nav-tabs">
         <li class="active"><a href="#settings_airquality_devices" data-toggle="tab">Devices</a></li>
