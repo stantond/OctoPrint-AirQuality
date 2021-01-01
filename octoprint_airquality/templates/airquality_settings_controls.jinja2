@@ -5,8 +5,8 @@
 </div>
 <div class="row-fluid">
     <form class="form-inline">
-        <button href="#" class="btn" data-bind="click: $root.startSensorRead, disable: $root.sensorReadThreadRunning() === true"><i class="fa fa-play" aria-hidden="true"></i></button>
-        <button href="#" class="btn" data-bind="click: $root.stopSensorRead, disable: $root.sensorReadThreadRunning() === false"><i class="fa fa-stop" aria-hidden="true"></i></button>
+        <button href="#" class="btn" data-bind="click: $root.startSensorRead, disable: $root.sensorReadThreadRunning() === true"><i class="fas fa-play" aria-hidden="true"></i></button>
+        <button href="#" class="btn" data-bind="click: $root.stopSensorRead, disable: $root.sensorReadThreadRunning() === false"><i class="fas fa-stop" aria-hidden="true"></i></button>
         <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === true">{{ _('Sensors are being read.') }}</span>
         <span class="help-inline" data-bind="visible: $root.sensorReadThreadRunning() === false">{{ _('Sensors are not being read.') }}</span>
     </form>

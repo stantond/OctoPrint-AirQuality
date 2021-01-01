@@ -6,23 +6,22 @@
             <td style="text-align:center">{{ _('Model') }}</td>
             <td style="text-align:center">{{ _('Location') }}</td>
             <td style="text-align:center">{{ _('Port') }}</td>
-            <td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showCreateDeviceModal"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
+            <td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showCreateDeviceModal"><i class="fas fa-plus" aria-hidden="true"></i></a></td>
         </tr>
     </thead>
-    <tbody data-bind="sortable: { data: $root.devices, options: { cancel: '.unsortable', handle: '.moveDevice', axis:'y'} }">
+    <tbody data-bind="foreach: $root.devices">
         <tr>
             <td><span data-bind="text: name"></span></td>
             <td><span data-bind="text: $root.getPrettyModel(model())"></span></td>
             <td><span data-bind="text: $root.getLocationNamefromId(location_id())"></span></td>
             <td style="text-align:center" data-bind="css: {'text-warning': portAvailable() === false}">
                 <span data-bind="text: port"></span>
-                <i class="fa fa-exclamation-triangle text-warning" title="{{ _('Port currently unavailable') }}" data-bind="visible: portAvailable() === false"></i>
+                <i class="fas fa-exclamation-triangle text-warning" title="{{ _('Port currently unavailable') }}" data-bind="visible: portAvailable() === false"></i>
             </td>
             <td style="text-align:right">
                 <div class="btn-group">
-                    <a href="#" class="btn btn-mini moveDevice"><i class="fa fa-arrows-alt" aria-hidden="true"></i></a>
-                    <a href="#" class="btn btn-mini" data-bind="click: $root.showEditDeviceModal"><i class="fa fa-pencil" aria-hidden="true"></i></a>
-                    <a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.showDeleteDeviceModal"><i class="fa fa-times" aria-hidden="true"></i></a>
+                    <a href="#" class="btn btn-mini" data-bind="click: $root.showEditDeviceModal"><i class="fas fa-pencil-alt" aria-hidden="true"></i></a>
+                    <a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.showDeleteDeviceModal"><i class="fas fa-times" aria-hidden="true"></i></a>
                 </div>
             </td>
         </tr>

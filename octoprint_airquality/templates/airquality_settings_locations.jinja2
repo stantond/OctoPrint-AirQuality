@@ -3,7 +3,7 @@
     <thead>
         <tr>
             <td style="text-align:center">{{ _('Name') }}</td>
-            <td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showCreateLocationModal"><i class="fa fa-plus" aria-hidden="true"></i></a></td>
+            <td style="text-align:right"><a href="#" class="btn btn-mini" data-bind="click: $root.showCreateLocationModal"><i class="fas fa-plus" aria-hidden="true"></i></a></td>
         </tr>
     </thead>
     <tbody data-bind="foreach: $root.locations">
@@ -11,8 +11,8 @@
             <td><span data-bind="text: name"></span></td>
             <td style="text-align:right">
                 <div class="btn-group">
-                    <a href="#" class="btn btn-mini" data-bind="click: $root.showEditLocationModal"><i class="fa fa-pencil" aria-hidden="true"></i></a>
-                    <a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.showDeleteLocationModal"><i class="fa fa-times" aria-hidden="true"></i></a>
+                    <a href="#" class="btn btn-mini" data-bind="click: $root.showEditLocationModal"><i class="fas fa-pencil-alt" aria-hidden="true"></i></a>
+                    <a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.showDeleteLocationModal"><i class="fas fa-times" aria-hidden="true"></i></a>
                 </div>
             </td>
         </tr>
