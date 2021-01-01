@@ -246,8 +246,28 @@ $(function() {
             })
         }
 
+        /* Check if the sensors are being read and make the frontend aware by updating the observable */
+        self.getSensorReadThreadStatus = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/airquality",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "get_sensor_read_thread_status"
+                }),
+                contentType: "application/json; charset=UTF-8",
+                success: function(response) {
+                    self.sensorReadThreadRunning(JSON.parse(response["sensors_read_thread_active_status"]));
+                },
+                error: function(response, errorThrown) {
+                    console.log(gettext(response["message"] + ": " + errorThrown));
+                }
+            });
+        }
+
         self.onSettingsShown = function() {
             self.requestSerialPortsMessage();
+            self.getSensorReadThreadStatus();
         }
 
         /* Get locations from the database and iteratively push each location into the local locations array with observable attributes*/

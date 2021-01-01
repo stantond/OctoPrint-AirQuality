@@ -85,6 +85,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 			refresh_available_serial_ports=[],
 			start_sensor_read=[],
 			stop_sensor_read=[],
+			get_sensor_read_thread_status=[],
 		)
 
 	def on_api_command(self, command, data):
@@ -155,7 +156,7 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				return flask.make_response('{"message": "Failed to refresh serial port availability"}', 500)
 		elif command == "start_sensor_read":
 			try:
-				if self.sensors_manager.read_thread_active == False:
+				if self.sensors_manager.get_sensors_read_thread_active_status() == False:
 					self.sensors_manager.set_sensors_read_thread_active_status(True)
 					return flask.make_response('{"message": "Sensors Read Thread started"}', 200)
 				else:
@@ -164,13 +165,20 @@ class AirqualityPlugin(octoprint.plugin.SettingsPlugin,
 				return flask.make_response('{"message": "Failed to start the Sensors Read Thread"}', 500)
 		elif command == "stop_sensor_read":
 			try:
-				if self.sensors_manager.read_thread_active == True:
+				if self.sensors_manager.get_sensors_read_thread_active_status() == True:
 					self.sensors_manager.set_sensors_read_thread_active_status(False)
 					return flask.make_response('{"message": "Sensors Read Thread stopped"}', 200)
 				else:
 					return flask.make_response('{"message": "Sensors Read Thread is already stopped"}', 200)
 			except:
 				return flask.make_response('{"message": "Failed to stop the Sensors Read Thread"}', 500)
+		elif command == "get_sensor_read_thread_status":
+			try:
+				response = flask.make_response(flask.jsonify({"sensors_read_thread_active_status": str(self.sensors_manager.get_sensors_read_thread_active_status()).lower()}), 200)
+				response.headers["Content-Type"] = "application/json"
+				return response
+			except:
+				return flask.make_response('{"message": "Unable to determine status of Sensors Read Thread"}', 500)
 
 	##~~ Softwareupdate hook
 

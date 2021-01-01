@@ -28,7 +28,7 @@ class SensorsManager():
 
         # Read Thread Variables
         self.read_thread = None
-        self.read_thread_active = False
+        self.is_read_thread_active = False
         self.sensor_loop_timer = 5
 
         # Start-Up Functions
@@ -84,7 +84,7 @@ class SensorsManager():
     def sensors_read_thread(self):
         """Read the sensors and store the results until told to stop."""
         self._logger.info("Starting Sensor Read Loop")
-        while self.read_thread_active is True:
+        while self.is_read_thread_active is True:
             self._logger.info("Checking device availability...")
             devices_available_count = sum(1 for d in self.devices if d["is_available"] == True)
             if devices_available_count > 0: # If at least one device is active, run this iteration of the loop
@@ -124,9 +124,13 @@ class SensorsManager():
 
     def set_sensors_read_thread_active_status(self, status):
         """Set the Active status of the Read Thread to True or False, and message the frontend to update the UI."""
-        self.read_thread_active = status
-        self._logger.info("Sensor Read Thread status set to " + str(self.read_thread_active))
-        self._plugin_manager.send_plugin_message(self._identifier, dict(sensors_read_thread_active_status=str(self.read_thread_active).lower()))
+        self.is_read_thread_active = status
+        self._logger.info("Sensor Read Thread status set to " + str(self.is_read_thread_active))
+        self._plugin_manager.send_plugin_message(self._identifier, dict(sensors_read_thread_active_status=str(self.is_read_thread_active).lower()))
+
+    def get_sensors_read_thread_active_status(self):
+        """Return the Active status (boolean) of the Read Thread."""
+        return self.is_read_thread_active
 
     # See https://pyserial.readthedocs.io/en/latest/tools.html#serial.tools.list_ports.ListPortInfo
     def update_serial_ports(self):
